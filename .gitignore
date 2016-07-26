@@ -1,0 +1,41 @@
+*.py[co]
+
+# Packages
+*.egg
+*.egg-info
+dist
+build
+eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+
+# Installer logs
+pip-log.txt
+
+# Unit test / coverage reports
+.coverage
+.tox
+
+# Translations
+*.mo
+
+# Virtualenv
+venv
+virtualenv
+include
+lib
+local
+man
+share
+Scripts
+.Python
+
+# MacOSX
+.DS_Store
+
+# LE HAProxy dev stuff
+working
