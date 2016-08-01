@@ -4,12 +4,12 @@ from setuptools import setup
 from setuptools import find_packages
 
 
-certbot_version = '0.9.0.dev0'
+certbot_version = '0.8.1'
 
 # Please update tox.ini when modifying dependency version requirements
 install_requires = [
-    'acme~={0}'.format(certbot_version),
-    'certbot~={0}'.format(certbot_version),
+    'acme>={0}'.format(certbot_version),
+    'certbot>={0}'.format(certbot_version),
     # For pkg_resources. >=1.0 so pip resolves it to a version cryptography
     # will tolerate; see #2599:
     'setuptools>=1.0',

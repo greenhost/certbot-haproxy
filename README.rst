@@ -1,15 +1,12 @@
 HAProxy plugin for Certbot
 ==========================
 
+Getting started (development)
+-----------------------------
 
-
-Contributing
-------------
-
-You need to create a virtual environment and start it, then install this plugin
-as a editable package using Python setuptools. I abstracted this in the
-`dev_vars` script, which you should source:
-
-```
-source dev_vars
-```
+In order to run tests against the Let's Encrypt API we will run a Boulder
+server, which is the exact same server Let's Encrypt is running. The server is
+started in Virtual Box using Vagrant. To prevent the installation of any
+components and dependencies from cluttering up your computer there is also a
+client Virtual Box instance. Both of these machines can be setup and started by
+running the `dev_start.sh` script.
