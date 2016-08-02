@@ -30,3 +30,16 @@ EOF
 ```
 
 Now you can run cerbot without root privileges.
+
+Setuptools version conflict
+---------------------------
+
+Most likely the `python-setuptools` version in your os's repositories is quite
+outdated. You will need to install a newer version, to do this you can run:
+
+```
+pip install --upgrade setuptools
+```
+
+Since pip is part of `python-setuptools`, you need to have it installed before
+you can update.
