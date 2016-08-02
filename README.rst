@@ -23,9 +23,9 @@ mkdir ~/projects/cerbot-haproxy/working
 mkdir ~/projects/cerbot-haproxy/working/config
 mkdir ~/projects/cerbot-haproxy/working/logs
 cat <<EOF >> ~/.config/letsencrypt/cli.ini
-work-dir=/home/chris/projects/certbot-haproxy/working/
-logs-dir=/home/chris/projects/certbot-haproxy/working/logs/
-config-dir=/home/chris/projects/certbot-haproxy/working/config
+work-dir=~/projects/certbot-haproxy/working/
+logs-dir=~/projects/certbot-haproxy/working/logs/
+config-dir=~/projects/certbot-haproxy/working/config
 EOF
 ```
 
