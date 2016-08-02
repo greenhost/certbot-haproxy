@@ -31,6 +31,37 @@ EOF
 
 Now you can run cerbot without root privileges.
 
+Further time savers during development..
+----------------------------------------
+The following options can be saved in the `cli.ini` file for the following
+reasons.
+
+ - `agree-tos`: During each request for a certificate you need to agree to the
+   terms of service of Let's Encrypt, automatically accept them every time.
+ - `no-self-upgrade`: Tell LE to not upgrade itself. Could be very annoying
+   when stuff starts to suddenly break, that worked just fine before.
+ - `register-unsafely-without-email`: Tell LE that you don't want to be
+   notified by e-mail when certificates are about to expire or when the TOS
+   changes, if you don't you will need to enter a valid e-mail address for
+   every test run.
+ - `text`: Disable the curses UI, and use the plain CLI version instead.
+ - `domain example.org`: Enter a default domain name to request a certificate
+   for, so you don't have to specify it every time.
+ - `configurator certbot-haproxy:haproxy`: Test with the HAProxy plugin every
+   time.
+
+
+
+cat <<EOF >> ~/.config/letsencrypt/cli.ini
+agree-tos
+no-self-upgrade
+register-unsafely-without-email
+text
+domain example.org
+configurator certbot-haproxy:haproxy
+EOF
+
+
 Setuptools version conflict
 ---------------------------
 
