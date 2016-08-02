@@ -26,7 +26,7 @@ class HAProxyConfigurator(common.Plugin):
         HAProxy configurator.
     """
 
-    description = "HaProxy - Alpha"
+    description = "HAProxy - Alpha"
 
     @classmethod
     def add_parser_arguments(cls, add):
@@ -52,6 +52,11 @@ class HAProxyConfigurator(common.Plugin):
 
         # No additional capabilities
         self._enhance_func = {}
+
+        # Set up reverter
+        self.reverter = reverter.Reverter(self.config)
+        # TODO: Figure out what exactly it does and if it will work..
+        self.reverter.recovery_routine()
 
     def prepare(self):
         """Prepare the authenticator/installer.
