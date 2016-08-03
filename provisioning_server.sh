@@ -79,6 +79,9 @@ source /boulder_venv/bin/activate
 # Install godep
 go get github.com/tools/godep
 
+# Goose is needed by the setup script (hope this will be fixed soon)
+go get bitbucket.org/liamstask/goose/cmd/goose
+
 # Install boulder into the gopath
 go get -d github.com/letsencrypt/boulder/...
 
@@ -100,7 +103,7 @@ if ! grep -Fxq "export SOFTHSM_CONF=export SOFTHSM_CONF=$PWD/test/softhsm.conf" 
 fi
 
 # Change pkcs to softhsm
-if grep -Fxq "/usr/local/lib/libpkcs11-proxy.so" test/test-ca.key-pkcs11.json; then
+if grep -Fq "/usr/local/lib/libpkcs11-proxy.so" test/test-ca.key-pkcs11.json; then
     git apply /vagrant/softhsm.patch
 fi
 
