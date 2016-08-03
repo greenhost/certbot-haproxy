@@ -34,7 +34,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         server.vm.network :private_network, ip:  ENVS['PROJECT_SERVER_IP']
         server.vm.provision "shell" do |s|
             s.path = './provisioning_server.sh'
-            # s.env = ENVS
+            s.env = ENVS
         end
         server.vm.provider :virtualbox do |vb|
             vb.customize ["modifyvm", :id, "--memory", SERVER_MEMORY]
@@ -50,7 +50,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         client.vm.network :private_network, ip:  ENVS['PROJECT_CLIENT_IP']
         client.vm.provision "shell" do |s|
             s.path = './provisioning_client.sh'
-            # s.env = ENVS
+            s.env = ENVS
         end
         client.vm.provider :virtualbox do |vb|
             vb.customize ["modifyvm", :id, "--memory", CLIENT_MEMORY]

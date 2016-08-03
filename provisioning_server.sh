@@ -72,11 +72,6 @@ ufw --force enable
 mkdir -p /gopath/bin
 mkdir -p /gopath/src
 
-# cd /vagrant
-# ./letsencrypt-auto-source/letsencrypt-auto --os-packages-only
-# ./tools/venv.sh
-# ./tests/boulder-start.sh
-
 virtualenv /boulder_venv -p /usr/bin/python2
 source /boulder_venv/bin/activate
 
@@ -100,15 +95,13 @@ godep restore
 ./test/make-softhsm.sh
 
 # Add softhsm configuration to .variables
-if ! grep -Fxq "export SOFTHSM_CONF=${SOFTHSM_CONF}" ~/.variables; then
-    echo "export SOFTHSM_CONF=${SOFTHSM_CONF}" >> ~/.variables
+if ! grep -Fxq "export SOFTHSM_CONF=export SOFTHSM_CONF=$PWD/test/softhsm.conf" ~/.variables; then
+    echo "export SOFTHSM_CONF=export SOFTHSM_CONF=$PWD/test/softhsm.conf" >> ~/.variables
 fi
 
 # Change pkcs to softhsm
-if ! grep -Fxq "/usr/local/lib/libpkcs11-proxy.so" test/test-ca.key-pkcs11.json; then
+if grep -Fxq "/usr/local/lib/libpkcs11-proxy.so" test/test-ca.key-pkcs11.json; then
     git apply /vagrant/softhsm.patch
 fi
-
-go run cmd/rabbitmq-setup/main.go -server amqp://boulder-rabbitmq
 
 echo "Provisioning completed."
