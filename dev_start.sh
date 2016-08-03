@@ -2,6 +2,7 @@
 
 CMDS="vagrant"
 DEPS="vagrant"
+VAGRANT_PLUGINS_REQUIRED=("vagrant-hostmanager" "vagrant-vbguest")
 
 VERBOSE=0
 for arg in "$@"; do
@@ -51,6 +52,7 @@ do_sudo () {
         sudo ls &> /dev/null
         SUDO=1
     fi
+    sudo bash -c "$1"
 }
 
 if ! commands_exist "${CMDS}"; then
@@ -59,34 +61,28 @@ if ! commands_exist "${CMDS}"; then
     exit 1
 fi
 
-#log "Checking for vagrant plugins.."
-#vagrant plugin install vagrant-hostmanager
-#vagrant plugin install vagrant-vbguest
-
-log "Checking hosts file for required entries.."
-for hostname in "le.wtf le1.wtf le2.wtf le3.wtf nginx.wtf"; do
-    if ! grep "${hostname}" /etc/hosts &> /dev/null; then
-        do_sudo
-        sudo cat <<EOF >> /etc/hosts
-            127.0.0.1   ${hostname}
-EOF
+log "Checking for vagrant plugins.."
+INSTALLED=$(vagrant plugin list | awk '{print $1;}' | xargs)
+for PLUGIN in "${VAGRANT_PLUGINS_REQUIRED[@]}"; do
+    if [[ $INSTALLED != *$plugin* ]]; then
+        log "Installing vagrant plugin \"${PLUGIN}\""
+        vagrant plugin install "${PLUGIN}"
     fi
 done
 
-if ! grep "lehaproxy.local" /etc/hosts &> /dev/null; then
-        do_sudo
-        sudo cat <<EOF >> /etc/hosts
-            127.0.0.1   lehaproxy.lan
-EOF
+log "Checking hosts file for required entries.."
+if ! grep "le.wtf le1.wtf le2.wtf le3.wtf nginx.wtf" /etc/hosts &> /dev/null; then
+    do_sudo "echo '127.0.0.1    le.wtf le1.wtf le2.wtf le3.wtf nginx.wtf' >> /etc/hosts"
 fi
-if ! grep "boulder.local" /etc/hosts &> /dev/null; then
-        do_sudo
-        sudo cat <<EOF >> /etc/hosts
-            127.0.0.1   boulder.lan
-EOF
+
+log "Starting Boulder CA server instance.."
+if vagrant up boulder; then
+    log "Starting LE HAProxy client vm.."
+    vagrant up lehaproxy
+else
+    log "ERROR: Couldn't start boulder server!"
+    exit 1
 fi
-log "Starting LE HAProxy client and server instance.."
-vagrant up
 
 echo "You can now connect to the Vagrant instance:"
 echo "vagrant ssh lehaproxy"
