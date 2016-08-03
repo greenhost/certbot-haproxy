@@ -11,6 +11,8 @@ apt-get install -y \
     python python-setuptools python-dev libssl-dev
 apt-get install -y -t jessie-backports certbot
 
+pip install --upgrade setuptools
+
 easy_install pip
 pip install virtualenv
 
@@ -28,10 +30,6 @@ pip install --editable .
 echo "${PROJECT_CLIENT_HOSTNAME}" > /etc/hostname
 hostname -F /etc/hostname
 
-cat <<EOF >> /etc/letsencrypt/cli.ini
-server http://le.wtf
-EOF
-
 cat <<EOF >> /etc/hosts
 ${PROJECT_SERVER_IP}   le.wtf
 ${PROJECT_SERVER_IP}   le1.wtf
@@ -40,31 +38,49 @@ ${PROJECT_SERVER_IP}   le3.wtf
 ${PROJECT_SERVER_IP}   nginx.wtf
 EOF
 
-cat <<EOF > /etc/systemd/system/letsencrypt.timer
-[Unit]
-Description=Run Let's Encrypt every 12 hours
-
-[Timer]
-# Time to wait after booting before we run first time
-OnBootSec=2min
-# Time between running each consecutive time
-OnUnitActiveSec=12h
-Unit=letsencrypt.service
-
-[Install]
-WantedBy=timers.target
+mkdir -p /vagrant/working/logs
+mkdir /vagrant/working/config
+chown -R vagrant: /vagrant/working
+mkdir -p /home/vagrant/.config/letsencrypt
+cat <<EOF >> /home/vagrant/.config/letsencrypt/cli.ini
+work-dir=/vagrant/working/
+logs-dir=/vagrant/working/logs/
+config-dir=/vagrant/working/config
+agree-tos
+no-self-upgrade
+register-unsafely-without-email
+text
+domain example.org
+configurator certbot-haproxy:haproxy
+server http://le.wtf
 EOF
+chown -R vagrant: /home/vagrant/.config/letsencrypt
 
-cat <<EOF > /etc/systemd/system/letsencrypt.service
-[Unit]
-Description=Renew Let's Encrypt Certificates
-
-[Service]
-Type=simple
-ExecStart=/usr/bin/certbot renew -q
-EOF
-
-systemctl enable letsencrypt.timer
-systemctl start letsencrypt.timer
+#cat <<EOF > /etc/systemd/system/letsencrypt.timer
+#[Unit]
+#Description=Run Let's Encrypt every 12 hours
+#
+#[Timer]
+## Time to wait after booting before we run first time
+#OnBootSec=2min
+## Time between running each consecutive time
+#OnUnitActiveSec=12h
+#Unit=letsencrypt.service
+#
+#[Install]
+#WantedBy=timers.target
+#EOF
+#
+#cat <<EOF > /etc/systemd/system/letsencrypt.service
+#[Unit]
+#Description=Renew Let's Encrypt Certificates
+#
+#[Service]
+#Type=simple
+#ExecStart=/usr/bin/certbot renew -q
+#EOF
+#
+#systemctl enable letsencrypt.timer
+#systemctl start letsencrypt.timer
 
 echo "Provisioning completed."
