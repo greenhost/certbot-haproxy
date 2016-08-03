@@ -41,3 +41,6 @@ Scripts
 working
 .vagrant
 certbot.log
+
+# tmp files:
+*.swp
