@@ -16,15 +16,12 @@ fi
 if ! grep -Fxq "export GOPATH=/gopath" ~/.variables; then
     echo "export GOPATH=/gopath" >> ~/.variables
 fi
-if ! grep -Fxq "export PATH=\$GOROOT/bin:\$PATH" ~/.variables; then
-    echo "export PATH=\$GOROOT/bin:\$PATH" >> ~/.variables
-fi
 if ! grep -Fxq "export GO15VENDOREXPERIMENT=1" ~/.variables; then
     echo "export GO15VENDOREXPERIMENT=1" >> ~/.variables
 fi
 # Add go to PATH variable
-if ! grep -Fxq "export PATH=\$PATH:\$GOPATH/bin:usr/local/go/bin" ~/.variables; then
-    echo "export PATH=\$PATH:\$GOPATH/bin:usr/local/go/bin" >> ~/.variables
+if ! grep -Fxq "export PATH=\$PATH:\$GOPATH/bin:\$GOROOT/bin" ~/.variables; then
+    echo "export PATH=\$PATH:\$GOPATH/bin:\$GOROOT/bin" >> ~/.variables
 fi
 
 if ! grep -Fxq "source ~/.variables" ~/.bashrc; then
