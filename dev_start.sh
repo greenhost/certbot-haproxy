@@ -87,6 +87,6 @@ fi
 echo "You can now connect to the Vagrant instance:"
 echo "vagrant ssh lehaproxy"
 echo "After connecting please run:"
-echo "sudo -s; cd /lehaproxy/; source /lehaproxy_venv/"
-
-
+echo "cd /lehaproxy/; source /lehaproxy_venv/"
+echo "You can now run certbot with the HAProxy plugin installed:"
+echo "certbot run"

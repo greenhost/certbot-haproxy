@@ -6,8 +6,8 @@ echo "deb http://ftp.debian.org/debian jessie-backports main" >> /etc/apt/source
 apt-get update
 apt-get upgrade -y
 apt-get install -y \
-    sudo htop net-tools tcpdump ufw git haproxy \
-    openssl ca-certificates \
+    sudo htop net-tools tcpdump ufw git haproxy tmux watch curl wget \
+    openssl ca-certificates build-essential libffi-dev \
     python python-setuptools python-dev libssl-dev
 apt-get install -y -t jessie-backports certbot
 
@@ -22,13 +22,14 @@ ufw allow https
 ufw default deny incoming
 ufw --force enable
 
+echo "${PROJECT_CLIENT_HOSTNAME}" > /etc/hostname
+hostname -F /etc/hostname
+
 virtualenv "/${PROJECT_NAME}_venv" -p /usr/bin/python
+chown -R vagrant: "/${PROJECT_NAME}_venv/bin/activate"
 source "/${PROJECT_NAME}_venv/bin/activate"
 cd "/${PROJECT_NAME}"
 pip install --editable .
-
-echo "${PROJECT_CLIENT_HOSTNAME}" > /etc/hostname
-hostname -F /etc/hostname
 
 cat <<EOF >> /etc/hosts
 ${PROJECT_SERVER_IP}   le.wtf
@@ -38,14 +39,14 @@ ${PROJECT_SERVER_IP}   le3.wtf
 ${PROJECT_SERVER_IP}   nginx.wtf
 EOF
 
-mkdir -p /vagrant/working/logs
-mkdir /vagrant/working/config
-chown -R vagrant: /vagrant/working
+mkdir -p "/${PROJECT_NAME}/working/logs"
+mkdir -p "/${PROJECT_NAME}/working/config"
+chown -R vagrant: "/${PROJECT_NAME}/working"
 mkdir -p /home/vagrant/.config/letsencrypt
 cat <<EOF >> /home/vagrant/.config/letsencrypt/cli.ini
-work-dir=/vagrant/working/
-logs-dir=/vagrant/working/logs/
-config-dir=/vagrant/working/config
+work-dir=/${PROJECT_NAME}/working/
+logs-dir=/${PROJECT_NAME}/working/logs/
+config-dir=/${PROJECT_NAME}/working/config
 agree-tos
 no-self-upgrade
 register-unsafely-without-email
@@ -55,6 +56,18 @@ configurator certbot-haproxy:haproxy
 server http://le.wtf
 EOF
 chown -R vagrant: /home/vagrant/.config/letsencrypt
+
+cat <<EOF >> /root/.bashrc
+alias ll='ls -l'
+alias la='ls -A'
+alias l='ls -CF'
+EOF
+
+cat <<EOF >> /home/vagrant/.bashrc
+alias ll='ls -l'
+alias la='ls -A'
+alias l='ls -CF'
+EOF
 
 #cat <<EOF > /etc/systemd/system/letsencrypt.timer
 #[Unit]
