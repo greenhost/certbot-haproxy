@@ -25,13 +25,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     config.hostmanager.manage_host = true
     config.vbguest.auto_update = true
     config.vbguest.no_remote = false
-    config.vm.synced_folder ".", "/vagrant/", disabled: true
-    config.vm.synced_folder ".", "/" + PROJECT_NAME + "/", type: "virtualbox"
 
     config.vm.define "boulder", autostart: true do |server|
         server.vm.box = "debian/jessie64"
         server.vm.hostname = "boulder.local"
         server.vm.network :private_network, ip:  ENVS['PROJECT_SERVER_IP']
+        server.vm.synced_folder ".", "/vagrant/", type: "virtualbox"
         server.vm.provision "shell" do |s|
             s.path = './provisioning_server.sh'
             s.env = ENVS
@@ -48,6 +47,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         client.vm.box = "debian/jessie64"
         client.vm.hostname = PROJECT_NAME + ".local"
         client.vm.network :private_network, ip:  ENVS['PROJECT_CLIENT_IP']
+        client.vm.synced_folder ".", "/vagrant/", disabled: true
+        client.vm.synced_folder ".", "/" + PROJECT_NAME + "/", type: "virtualbox"
         client.vm.provision "shell" do |s|
             s.path = './provisioning_client.sh'
             s.env = ENVS
