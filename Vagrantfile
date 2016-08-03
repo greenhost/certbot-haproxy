@@ -25,11 +25,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     config.hostmanager.manage_host = true
     config.vbguest.auto_update = true
     config.vbguest.no_remote = false
-    config.vm.synced_folder ".", "/vagrant/", disabled: true
+    config.vm.synced_folder ".", "/vagrant", enabled: true
     config.vm.synced_folder ".", "/" + PROJECT_NAME + "/", type: "virtualbox"
 
     config.vm.define "boulder", autostart: true do |server|
-        server.vm.box = "debian/jessie64"
+        server.vm.box = "ubuntu/trusty64"
         server.vm.hostname = "boulder.local"
         server.vm.network :private_network, ip:  ENVS['PROJECT_SERVER_IP']
         server.vm.provision "shell" do |s|

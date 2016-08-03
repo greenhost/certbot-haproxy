@@ -1,0 +1,11 @@
+diff --git a/test/test-ca.key-pkcs11.json b/test/test-ca.key-pkcs11.json
+index 7a8d348..746dee8 100644
+--- a/test/test-ca.key-pkcs11.json
++++ b/test/test-ca.key-pkcs11.json
+@@ -1,5 +1,5 @@
+ {
+-    "module": "/usr/local/lib/libpkcs11-proxy.so",
++    "module": "/usr/lib/softhsm/libsofthsm.so",
+     "tokenLabel": "token_label",
+     "pin": "5678",
+     "privateKeyLabel": "key_label"
