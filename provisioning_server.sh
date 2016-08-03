@@ -95,8 +95,8 @@ godep restore
 ./test/make-softhsm.sh
 
 # Add softhsm configuration to .variables
-if ! grep -Fxq "export SOFTHSM_CONF=export SOFTHSM_CONF=$PWD/test/softhsm.conf" ~/.variables; then
-    echo "export SOFTHSM_CONF=export SOFTHSM_CONF=$PWD/test/softhsm.conf" >> ~/.variables
+if ! grep -Fxq "export SOFTHSM_CONF=$PWD/test/softhsm.conf" ~/.variables; then
+    echo "export SOFTHSM_CONF=$PWD/test/softhsm.conf" >> ~/.variables
 fi
 
 # Change pkcs to softhsm
