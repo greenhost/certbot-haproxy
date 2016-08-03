@@ -7,7 +7,7 @@ apt-get update
 apt-get upgrade -y
 apt-get install -y \
     sudo htop net-tools tcpdump ufw git haproxy tmux watch curl wget \
-    openssl ca-certificates \
+    openssl ca-certificates build-essential libffi-dev \
     python python-setuptools python-dev libssl-dev
 apt-get install -y -t jessie-backports certbot
 
