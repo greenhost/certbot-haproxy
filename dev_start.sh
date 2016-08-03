@@ -70,11 +70,6 @@ for PLUGIN in "${VAGRANT_PLUGINS_REQUIRED[@]}"; do
     fi
 done
 
-log "Checking hosts file for required entries.."
-if ! grep "le.wtf le1.wtf le2.wtf le3.wtf nginx.wtf" /etc/hosts &> /dev/null; then
-    do_sudo "echo '127.0.0.1    le.wtf le1.wtf le2.wtf le3.wtf nginx.wtf' >> /etc/hosts"
-fi
-
 log "Starting Boulder CA server instance.."
 if vagrant up boulder; then
     log "Starting LE HAProxy client vm.."
