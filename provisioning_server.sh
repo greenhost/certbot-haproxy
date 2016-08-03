@@ -20,13 +20,16 @@ if ! grep -Fxq "export GOPATH=/gopath" ~/.variables; then
     echo "export GOPATH=/gopath" >> ~/.variables
 fi
 if ! grep -Fxq "export PATH=\$GOROOT/bin:\$PATH" ~/.variables; then
-  echo "export PATH=\$GOROOT/bin:\$PATH" >> ~/.variables
+    echo "export PATH=\$GOROOT/bin:\$PATH" >> ~/.variables
 fi
-
+if ! grep -Fxq "export GO15VENDOREXPERIMENT=1" ~/.variables; then
+    echo "export GO15VENDOREXPERIMENT=1" >> ~/.variables
+fi
 # Add go to PATH variable
 if ! grep -Fxq "export PATH=\$PATH:\$GOPATH/bin:usr/local/go/bin" ~/.variables; then
     echo "export PATH=\$PATH:\$GOPATH/bin:usr/local/go/bin" >> ~/.variables
 fi
+
 if ! grep -Fxq "source ~/.variables" ~/.bashrc; then
     echo "source ~/.variables" >> ~/.bashrc
 fi
@@ -47,7 +50,8 @@ apt-get install -y \
     sudo htop net-tools tcpdump ufw git curl g++ \
     openssl ca-certificates \
     python2.7 python-setuptools python-virtualenv \
-    rabbitmq-server make libltdl-dev mariadb-server nginx-light
+    rabbitmq-server make libltdl-dev mariadb-server nginx-light \
+    softhsm libsofthsm-dev
 
 echo boulder.local > /etc/hostname
 hostname -F /etc/hostname
@@ -76,7 +80,6 @@ mkdir -p /gopath/src
 virtualenv /boulder_venv -p /usr/bin/python2
 source /boulder_venv/bin/activate
 
-export GO15VENDOREXPERIMENT=1
 
 # Install godep
 go get github.com/tools/godep
@@ -90,13 +93,21 @@ cd /gopath/src/github.com/letsencrypt/boulder
 # Install alle dependencies
 godep restore
 
-# Update some dependencies that otherwise have errors
-go get -u golang.org/x/crypto/...
-go get -u golang.org/x/net/trace/...
-go get -u google.golang.org/grpc/...
-
 # Remaining setup
 ./test/setup.sh
+
+# Apply softhsm configuration
+./test/make-softhsm.sh
+
+# Add softhsm configuration to .variables
+if ! grep -Fxq "export SOFTHSM_CONF=${SOFTHSM_CONF}" ~/.variables; then
+    echo "export SOFTHSM_CONF=${SOFTHSM_CONF}" >> ~/.variables
+fi
+
+# Change pkcs to softhsm
+if ! grep -Fxq "/usr/local/lib/libpkcs11-proxy.so" test/test-ca.key-pkcs11.json; then
+    git apply /vagrant/softhsm.patch
+fi
 
 go run cmd/rabbitmq-setup/main.go -server amqp://boulder-rabbitmq
 
