@@ -36,9 +36,10 @@ fi
 
 source ~/.variables
 
-# Add PPA for MariaDb
-sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xcbcb082a1bb943db
-sudo add-apt-repository 'deb [arch=amd64,i386,ppc64el] http://mirrors.supportex.net/mariadb/repo/10.1/ubuntu trusty main'
+# Add repo for MariaDb
+sudo apt-get install -y software-properties-common
+sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xcbcb082a1bb943db
+sudo add-apt-repository 'deb [arch=amd64,i386] http://mirror.i3d.net/pub/mariadb/repo/10.1/debian jessie main'
 
 apt-get update
 apt-get upgrade -y
@@ -72,7 +73,6 @@ mkdir -p /gopath/src
 virtualenv /boulder_venv -p /usr/bin/python2
 source /boulder_venv/bin/activate
 
-
 # Install godep
 go get github.com/tools/godep
 
@@ -103,5 +103,30 @@ fi
 if grep -Fq "/usr/local/lib/libpkcs11-proxy.so" test/test-ca.key-pkcs11.json; then
     git apply /vagrant/softhsm.patch
 fi
+
+cat <<EOF > "/lib/systemd/system/boulder.service"
+[Unit]
+Description=Boulder Server
+After=network.target
+Wants=mariadb.service,rabbitmq.service
+[Service]
+Type=simple
+KillMode=process
+RemainAfterExit=no
+Restart=always
+Environment="GOROOT=/usr/local/go"
+Environment="GOPATH=/gopath"
+Environment="PATH=/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/gopath/bin:/usr/local/go/bin"
+Environment="GO15VENDOREXPERIMENT=1"
+Environment="SOFTHSM_CONF=/gopath/src/github.com/letsencrypt/boulder/test/softhsm.conf"
+WorkingDirectory=/gopath/src/github.com/letsencrypt/boulder/
+ExecStart=/boulder_venv/bin/python ./start.py
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl enable boulder.service
+systemctl start boulder.service
+
 
 echo "Provisioning completed."
