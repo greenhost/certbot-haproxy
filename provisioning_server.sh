@@ -101,14 +101,28 @@ if grep -Fq "/usr/local/lib/libpkcs11-proxy.so" test/test-ca.key-pkcs11.json; th
     git apply /vagrant/softhsm.patch
 fi
 
-cat <<EOF > "/lib/systemd/system/boulder.service"
+cat <<EOF > /etc/nginx/sites-available/wfe
+server {
+    listen 80;
+    location / {
+        proxy_pass http://localhost:4000;
+        proxy_redirect http://localhost:4000/ $scheme://$host:80/;
+    }
+}
+EOF
+
+ln -s /etc/nginx/sites-available/wfe /etc/nginx/sites-enabled/wfe
+rm -rfv /etc/nginx/sites-enabled/default
+systemctl restart nginx
+
+cat <<EOF > /lib/systemd/system/boulder.service
 [Unit]
 Description=Boulder Server
 After=network.target
 Wants=mariadb.service,rabbitmq.service
 [Service]
 Type=simple
-KillMode=process
+KillMode=mixed
 RemainAfterExit=no
 Restart=always
 Environment="GOROOT=/usr/local/go"

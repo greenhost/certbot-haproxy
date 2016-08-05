@@ -47,11 +47,13 @@ cat <<EOF >> /home/vagrant/.config/letsencrypt/cli.ini
 work-dir=/${PROJECT_NAME}/working/
 logs-dir=/${PROJECT_NAME}/working/logs/
 config-dir=/${PROJECT_NAME}/working/config
-agree-tos
-no-self-upgrade
-register-unsafely-without-email
-text
-domain example.org
+agree-tos = True
+no-self-upgrade = True
+register-unsafely-without-email = True
+text = True
+domains example.org
+debug = True
+verbose = True
 configurator certbot-haproxy:haproxy
 server http://le.wtf
 EOF
