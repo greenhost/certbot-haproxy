@@ -52,6 +52,7 @@ echo boulder.local > /etc/hostname
 hostname -F /etc/hostname
 
 ufw allow ssh
+ufw allow http
 ufw allow 4000
 ufw allow 8000
 ufw allow 8001

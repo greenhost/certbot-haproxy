@@ -31,7 +31,7 @@ class HAProxyConfigurator(common.Plugin):
     @classmethod
     def add_parser_arguments(cls, add):
         # TODO: This is how we add arguments, do we need any?
-        #add("enmod", default=constants.os_constant("enmod"),
+        # add("enmod", default=constants.os_constant("enmod"),
         #    help="Path to the Apache 'a2enmod' binary.")
         pass
 

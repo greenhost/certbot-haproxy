@@ -72,8 +72,8 @@ setup(
     },
     entry_points={
         'certbot.plugins': [
-            'haproxy = certbot_haproxy.configurator:HAProxyConfigurator',
+            'haproxy = certbot_haproxy.authenticator:Authenticator',
         ],
     },
-    test_suite='certbot_haproxy',
+    # test_suite='certbot_haproxy',
 )
