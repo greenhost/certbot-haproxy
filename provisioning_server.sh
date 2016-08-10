@@ -46,7 +46,7 @@ apt-get install -y \
     openssl ca-certificates \
     python2.7 python-setuptools python-virtualenv \
     rabbitmq-server make libltdl-dev mariadb-server nginx-light \
-    softhsm libsofthsm-dev
+    softhsm libsofthsm-dev vim
 
 echo boulder.local > /etc/hostname
 hostname -F /etc/hostname
@@ -97,9 +97,9 @@ if ! grep -Fxq "export SOFTHSM_CONF=$PWD/test/softhsm.conf" ~/.variables; then
     echo "export SOFTHSM_CONF=$PWD/test/softhsm.conf" >> ~/.variables
 fi
 
-# Change pkcs to softhsm
+# Change pkcs to softhsm and IP to 192.168.33.111
 if grep -Fq "/usr/local/lib/libpkcs11-proxy.so" test/test-ca.key-pkcs11.json; then
-    git apply /vagrant/softhsm.patch
+    git apply /vagrant/greenhost.patch
 fi
 
 cat <<EOF > /etc/nginx/sites-available/wfe
@@ -107,7 +107,7 @@ server {
     listen 80;
     location / {
         proxy_pass http://localhost:4000;
-        proxy_redirect http://localhost:4000/ $scheme://$host:80/;
+        proxy_redirect http://localhost:4000/ \$scheme://\$host:80/;
     }
 }
 EOF

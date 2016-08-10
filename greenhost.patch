@@ -1,3 +1,18 @@
+diff --git a/test/config/wfe.json b/test/config/wfe.json
+index 532da42..29e09fd 100644
+--- a/test/config/wfe.json
++++ b/test/config/wfe.json
+@@ -44,7 +44,7 @@
+   },
+ 
+   "common": {
+-    "baseURL": "http://127.0.0.1:4000",
++    "baseURL": "http://192.168.33.111:4000",
+     "issuerCert": "test/test-ca.pem"
+   }
+-}
+\ No newline at end of file
++}
 diff --git a/test/test-ca.key-pkcs11.json b/test/test-ca.key-pkcs11.json
 index 7a8d348..746dee8 100644
 --- a/test/test-ca.key-pkcs11.json

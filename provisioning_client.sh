@@ -43,6 +43,8 @@ mkdir -p "/${PROJECT_NAME}/working/logs"
 mkdir -p "/${PROJECT_NAME}/working/config"
 chown -R vagrant: "/${PROJECT_NAME}/working"
 mkdir -p /home/vagrant/.config/letsencrypt
+# TODO: Maybe change greenhost.nl to something that is not example.org and yet
+# does work.
 cat <<EOF >> /home/vagrant/.config/letsencrypt/cli.ini
 work-dir=/${PROJECT_NAME}/working/
 logs-dir=/${PROJECT_NAME}/working/logs/
@@ -51,11 +53,11 @@ agree-tos = True
 no-self-upgrade = True
 register-unsafely-without-email = True
 text = True
-domains example.org
+domains greenhost.nl
 debug = True
 verbose = True
 configurator certbot-haproxy:haproxy
-server http://le.wtf
+server http://le.wtf/directory
 EOF
 chown -R vagrant: /home/vagrant/.config/letsencrypt
 
