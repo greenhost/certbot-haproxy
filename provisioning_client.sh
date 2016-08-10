@@ -26,7 +26,7 @@ echo "${PROJECT_CLIENT_HOSTNAME}" > /etc/hostname
 hostname -F /etc/hostname
 
 virtualenv "/${PROJECT_NAME}_venv" -p /usr/bin/python
-chown -R vagrant: "/${PROJECT_NAME}_venv/bin/activate"
+chown -R vagrant: "/${PROJECT_NAME}_venv/"
 source "/${PROJECT_NAME}_venv/bin/activate"
 cd "/${PROJECT_NAME}"
 pip install --editable .
@@ -45,7 +45,7 @@ chown -R vagrant: "/${PROJECT_NAME}/working"
 mkdir -p /home/vagrant/.config/letsencrypt
 # TODO: Maybe change greenhost.nl to something that is not example.org and yet
 # does work.
-cat <<EOF >> /home/vagrant/.config/letsencrypt/cli.ini
+cat <<EOF > /home/vagrant/.config/letsencrypt/cli.ini
 work-dir=/${PROJECT_NAME}/working/
 logs-dir=/${PROJECT_NAME}/working/logs/
 config-dir=/${PROJECT_NAME}/working/config
@@ -56,7 +56,8 @@ text = True
 domains greenhost.nl
 debug = True
 verbose = True
-configurator certbot-haproxy:haproxy
+#configurator certbot-haproxy:haproxy
+authenticator certbot-haproxy:haproxy
 server http://le.wtf/directory
 EOF
 chown -R vagrant: /home/vagrant/.config/letsencrypt
