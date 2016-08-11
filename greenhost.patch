@@ -1,3 +1,25 @@
+diff --git a/test/config/va.json b/test/config/va.json
+index 75ff959..d031f99 100644
+--- a/test/config/va.json
++++ b/test/config/va.json
+@@ -3,8 +3,8 @@
+     "userAgent": "boulder",
+     "debugAddr": "localhost:8004",
+     "portConfig": {
+-      "httpPort": 5002,
+-      "httpsPort": 5001,
++      "httpPort": 80,
++      "httpsPort": 443,
+       "tlsPort": 5001
+     },
+     "maxConcurrentRPCServerRequests": 16,
+@@ -37,4 +37,4 @@
+     "dnsTimeout": "10s",
+     "dnsAllowLoopbackAddresses": true
+   }
+-}
+\ No newline at end of file
++}
 diff --git a/test/config/wfe.json b/test/config/wfe.json
 index 532da42..29e09fd 100644
 --- a/test/config/wfe.json
