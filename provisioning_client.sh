@@ -56,7 +56,7 @@ agree-tos = True
 no-self-upgrade = True
 register-unsafely-without-email = True
 text = True
-domains greenhost.nl
+domains testsite.nl
 debug = True
 verbose = True
 #configurator certbot-haproxy:haproxy
