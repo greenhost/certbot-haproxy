@@ -30,6 +30,15 @@ fi
 if ! grep -Fxq "127.0.0.1 boulder boulder-rabbitmq boulder-mysql" /etc/hosts; then
   echo '127.0.0.1 boulder boulder-rabbitmq boulder-mysql' >> /etc/hosts
 fi
+if ! grep -Fxq "192.168.33.222 testsite.nl" /etc/hosts; then
+  echo '192.168.33.222 testsite.nl' >> /etc/hosts
+fi
+
+cat <<EOF >> /root/.bashrc
+alias ll='ls -lah'
+alias la='ls -A'
+alias l='ls -CF'
+EOF
 
 source ~/.variables
 

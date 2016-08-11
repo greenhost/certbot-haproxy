@@ -52,7 +52,7 @@ do_sudo () {
         sudo ls &> /dev/null
         SUDO=1
     fi
-    sudo bash -c "$1"
+    sudo bash -c "$@"
 }
 
 if ! commands_exist "${CMDS}"; then
@@ -69,6 +69,10 @@ for PLUGIN in "${VAGRANT_PLUGINS_REQUIRED[@]}"; do
         vagrant plugin install "${PLUGIN}"
     fi
 done
+
+if ! grep -Fxq "192.168.33.222 testsite.nl" /etc/hosts; then
+  do_sudo "echo '192.168.33.222 testsite.nl' >> /etc/hosts"
+fi
 
 log "Starting Boulder CA server instance.."
 if vagrant up boulder; then
