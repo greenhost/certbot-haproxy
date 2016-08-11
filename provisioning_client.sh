@@ -39,7 +39,7 @@ ${PROJECT_SERVER_IP}   le1.wtf
 ${PROJECT_SERVER_IP}   le2.wtf
 ${PROJECT_SERVER_IP}   le3.wtf
 ${PROJECT_SERVER_IP}   nginx.wtf
-${PROJECT_SERVER_IP}   testsite.nl
+${PROJECT_CLIENT_IP}   testsite.nl
 EOF
 
 mkdir -p "/${PROJECT_NAME}/working/logs"
