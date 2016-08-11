@@ -39,6 +39,7 @@ class Authenticator(standalone.Authenticator):
             The arguments can be retrieved by asking for corresponding names
             in `self.conf([argument name])`
         """
+        logger.info("adding parser argument")
         add(
             "internal-port",
             help=(
@@ -46,7 +47,7 @@ class Authenticator(standalone.Authenticator):
                 "to port 80 to it."
             ),
             type=int,
-            default=8080
+            default=8000
         )
 
     @property
@@ -58,6 +59,13 @@ class Authenticator(standalone.Authenticator):
 
     @property
     def _necessary_ports(self):
+        """
+            Return the port that is set with the argparse argument
+        """
+        if self.conf('internal_port'):
+            logger.info("setting http01_port to " +
+                        str(self.conf('internal_port')))
+            self.config.http01_port = self.conf('internal_port')
         return {self.config.http01_port}
 
     def more_info(self):
