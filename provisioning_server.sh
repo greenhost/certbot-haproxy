@@ -106,7 +106,7 @@ if ! grep -Fxq "export SOFTHSM_CONF=$PWD/test/softhsm.conf" ~/.variables; then
     echo "export SOFTHSM_CONF=$PWD/test/softhsm.conf" >> ~/.variables
 fi
 
-# Change pkcs to softhsm and IP to 192.168.33.111
+# Change pkcs to softhsm and IP to 192.168.33.111 and set high thresholds for rate limeting
 if grep -Fq "/usr/local/lib/libpkcs11-proxy.so" test/test-ca.key-pkcs11.json; then
     git apply /vagrant/greenhost.patch
 fi
