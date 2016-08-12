@@ -2,9 +2,9 @@
     HAProxy Authenticator.
 
     This authenticator creates its own ephemeral TCP listener on the necessary
-    port in order to respond to incoming http-01 challenges from the
+    port in order to respond to incoming `http-01` challenges from the
     certificate authority. You need to forward port requests for
-    `/.well-known/acme-challenge/` on port 80 to the http-01 port
+    `/.well-known/acme-challenge/` on port 80 to the `http-01` port
     (default:8000). You may do this like this for example:
 
     ```
@@ -35,12 +35,12 @@
             server node4 127.0.0.1:8080 check
     ```
 
-    The Authenticator of this plugin is simply an extension of the "standalone"
-    plugin that is part of certbot. It limits its functionality to only support
-    the http-01 challenge because checks the challenge by connecting to port
-    443. We can't proxy requests to certbot because we can't see the requested
-    uri until the request is decrypted, and we can't do decryption in HAProxy
-    because tls-sni-01 expects to do a TLS handshake.
+    The Authenticator is simply an extension of the "standalone" plugin that is
+    part of certbot. It limits its functionality to only support the `http-01`
+    challenge because checks the challenge by connecting to port 443. We can't
+    proxy requests to certbot because we can't see the requested uri until the
+    request is decrypted, and we can't do decryption in HAProxy because
+    `tls-sni-01` expects to do a TLS handshake.
 """
 import logging
 
@@ -51,22 +51,20 @@ from acme import challenges
 
 from certbot import interfaces
 from certbot.plugins import standalone
-# from certbot_haproxy import constants # for installer
 
 logger = logging.getLogger(__name__)  # pylint:disable=invalid-name
 
 
 @zope.interface.implementer(interfaces.IAuthenticator)
 @zope.interface.provider(interfaces.IPluginFactory)
-class Authenticator(standalone.Authenticator):
-    """Standalone Authenticator."""
+class HAProxyAuthenticator(standalone.Authenticator):
+    """HAProxy Authenticator."""
 
     description = "Certbot standalone authenticator with HAProxy preset."
 
     def __init__(self, *args, **kwargs):
-        super(Authenticator, self).__init__(*args, **kwargs)
+        super(HAProxyAuthenticator, self).__init__(*args, **kwargs)
         self.config.http01_port = self.conf('internal_port')
-        self.add_parser_arguments()
 
     @classmethod
     def add_parser_arguments(cls, add):
@@ -97,7 +95,8 @@ class Authenticator(standalone.Authenticator):
         """
         return [challenges.HTTP01]
 
-    def more_info(self):
+    @staticmethod
+    def more_info():
         """
             This info string only appears in the curses UI in the plugin
             selection sequence.

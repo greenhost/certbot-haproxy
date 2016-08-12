@@ -37,6 +37,9 @@ long_description = (
     "not applicable in your environment."
 )
 
+haproxy_authenticator = 'certbot_haproxy.authenticator:HAProxyAuthenticator'
+haproxy_installer = 'certbot_haproxy.installer:HAProxyInstaller'
+
 setup(
     name='certbot-haproxy',
     version=certbot_version,
@@ -72,7 +75,8 @@ setup(
     },
     entry_points={
         'certbot.plugins': [
-            'haproxy = certbot_haproxy.authenticator:Authenticator',
+            'haproxy-authenticator = %s' % haproxy_authenticator,
+            'haproxy-installer = %s' % haproxy_installer
         ],
     },
     # test_suite='certbot_haproxy',
