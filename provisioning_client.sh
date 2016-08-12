@@ -75,6 +75,7 @@ cat <<EOF >> /home/vagrant/.bashrc
 alias ll='ls -l'
 alias la='ls -A'
 alias l='ls -CF'
+source /lehaproxy_venv/bin/activate
 EOF
 
 # Allow haproxy to read the dirs of the le plugin
