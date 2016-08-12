@@ -30,9 +30,6 @@ fi
 if ! grep -Fxq "127.0.0.1 boulder boulder-rabbitmq boulder-mysql" /etc/hosts; then
   echo '127.0.0.1 boulder boulder-rabbitmq boulder-mysql' >> /etc/hosts
 fi
-if ! grep -Fxq "192.168.33.222 testsite.nl" /etc/hosts; then
-  echo '192.168.33.222 testsite.nl' >> /etc/hosts
-fi
 
 cat <<EOF >> /root/.bashrc
 alias ll='ls -lah'
@@ -106,7 +103,7 @@ if ! grep -Fxq "export SOFTHSM_CONF=$PWD/test/softhsm.conf" ~/.variables; then
     echo "export SOFTHSM_CONF=$PWD/test/softhsm.conf" >> ~/.variables
 fi
 
-# Change pkcs to softhsm and IP to 192.168.33.111 and set high thresholds for rate limeting
+# Change pkcs to softhsm and IP to 192.168.33.111 and set high thresholds for rate limiting
 if grep -Fq "/usr/local/lib/libpkcs11-proxy.so" test/test-ca.key-pkcs11.json; then
     git apply /vagrant/greenhost.patch
 fi
@@ -140,6 +137,7 @@ Environment="GOPATH=/gopath"
 Environment="PATH=/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/gopath/bin:/usr/local/go/bin"
 Environment="GO15VENDOREXPERIMENT=1"
 Environment="SOFTHSM_CONF=/gopath/src/github.com/letsencrypt/boulder/test/softhsm.conf"
+Environment="FAKE_DNS=192.168.33.222"
 WorkingDirectory=/gopath/src/github.com/letsencrypt/boulder/
 ExecStart=/boulder_venv/bin/python ./start.py
 [Install]
