@@ -129,33 +129,36 @@ frontend http-in
     # Uncomment when ready.. Needs ACL to work per site.
     # bind *:443 ssl crt /lehaproxy/working/certs/
 
-    acl is_letsencrypt path_beg -i /.well-known/acme-challenge
-    use_backend letsencrypt if is_letsencrypt
+    acl is_certbot path_beg -i /.well-known/acme-challenge
+    use_backend certbot if is_certbot
 
     # IF redirect is to be used, uncomment the next line
     # redirect scheme https if !{ ssl_fc } and testsite.nl
     default_backend nodes
 
-backend letsencrypt
-    log global
-    mode http
-    server letsencrypt 127.0.0.1:8000
+    acl is_cerbot path_beg -i /.well-known/acme-challenge
+    use_backend certbot if is_cerbot
 
-backend nodes
-    log global
-    mode http
-    option tcplog
-    balance roundrobin
-    option forwardfor
-    option http-server-close
-    option httpclose
-    http-request set-header X-Forwarded-Port %[dst_port]
-    http-request add-header X-Forwarded-Proto https if { ssl_fc }
-    option httpchk HEAD / HTTP/1.1\r\nHost:localhost
-    server node1 127.0.0.1:8080 check
-    server node2 127.0.0.1:8080 check
-    server node3 127.0.0.1:8080 check
-    server node4 127.0.0.1:8080 check
+    backend certbot
+        log global
+        mode http
+        server certbot 127.0.0.1:8000
+
+    backend nodes
+        log global
+        mode http
+        option tcplog
+        balance roundrobin
+        option forwardfor
+        option http-server-close
+        option httpclose
+        http-request set-header X-Forwarded-Port %[dst_port]
+        http-request add-header X-Forwarded-Proto https if { ssl_fc }
+        option httpchk HEAD / HTTP/1.1\r\nHost:localhost
+        server node1 127.0.0.1:8080 check
+        server node2 127.0.0.1:8080 check
+        server node3 127.0.0.1:8080 check
+        server node4 127.0.0.1:8080 check
 EOF
 cat <<EOF > /etc/apache2/sites-enabled/000-default.conf
 <VirtualHost testsite.nl:8080>
