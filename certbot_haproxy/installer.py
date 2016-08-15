@@ -43,7 +43,7 @@ class HAProxyInstaller(common.Plugin):
         self.save_notes = ""
 
         #: File extension for saved certificates
-        self.crt_postfix = ".crt"
+        self.crt_postfix = ".pem"
 
         # Set up reverter
         self.reverter = reverter.Reverter(self.config)
@@ -79,6 +79,8 @@ class HAProxyInstaller(common.Plugin):
     def get_all_names(self):
         """Returns all names that have SSL certificates
 
+        TODO: Should also return other domains on which SSL can be activated
+
         :returns: All filenames ending in self.crt_postfix in the
             `crt_directory`
         :rtype: set
@@ -86,7 +88,9 @@ class HAProxyInstaller(common.Plugin):
         all_names = set()
         for filename in glob.glob(constants.os_constant("crt_directory") +
                                   '*' + self.crt_postfix):
-            all_names.update(filename)
+            domain = os.path.splitext(os.path.basename(filename))[0]
+            logger.info("Found domain: %s", domain)
+            all_names.add(domain)
         logger.info("get_all_names returning:\n\t%s", all_names)
         return all_names
 
@@ -251,7 +255,6 @@ class HAProxyInstaller(common.Plugin):
         for filepath, contents in \
                 self.new_crt_files.items() + self.crt_files.items():
             with open(filepath, 'w') as cert:
-                print "Writing to %s" % filepath
                 cert.write(contents)
         self.new_crt_files = {}
         self.crt_files = {}
@@ -263,7 +266,6 @@ class HAProxyInstaller(common.Plugin):
             except errors.ReverterError as err:
                 raise errors.PluginError(str(err))
 
-        print "Changes saved"
         return True
 
     def rollback_checkpoints(self, rollback=1):
@@ -290,7 +292,7 @@ class HAProxyInstaller(common.Plugin):
             path - File path to configuration file.
         :rtype: set
         """
-        print "get_all_certs_keys called, not returning anything :("
+        logger.warn("get_all_certs_keys called, not doing anything :(")
 
     def restart(self):
         """Runs a config test and reloads the Apache server.
