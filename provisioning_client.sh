@@ -59,8 +59,8 @@ text = True
 domains testsite.nl
 debug = True
 verbose = True
-#configurator certbot-haproxy:haproxy
-authenticator certbot-haproxy:haproxy
+authenticator certbot-haproxy:haproxy-authenticator
+installer certbot-haproxy:haproxy-installer
 server http://le.wtf/directory
 EOF
 chown -R vagrant: /home/vagrant/.config/letsencrypt
@@ -82,6 +82,8 @@ EOF
 # TODO: Does this even work with the `chroot` directive?
 usermod -a -G vagrant haproxy
 
+mkdir /etc/ssl/crt
+
 cat <<EOF > /etc/haproxy/haproxy.cfg
 global
         log /dev/log    local0
@@ -94,8 +96,9 @@ global
         daemon
 
         # Default SSL material locations
-        ca-base /etc/ssl/certs
-        crt-base /etc/ssl/private
+        # ca-base /etc/ssl/certs
+        # crt-base /etc/ssl/private
+        crt /etc/ssl/crt
 
         # Default ciphers to use on SSL-enabled listening sockets.
         # Cipher suites chosen by following logic:
@@ -178,6 +181,12 @@ EOF
 cat <<EOF > /etc/apache2/ports.conf
 Listen 8080
 EOF
+
+# Insert a line into the sudoers file that makes our user able to restart
+# haproxy (which it needs to do after every certificate edit)
+bash -c 'echo "vagrant ALL=NOPASSWD: /bin/systemctl restart haproxy"
+    | (EDITOR="tee -a" visudo)'
+
 
 systemctl restart apache2
 systemctl restart haproxy

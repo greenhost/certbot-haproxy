@@ -4,15 +4,21 @@ from certbot import util
 CLI_DEFAULTS_DEBIAN_JESSIE = dict(
     server_root="/etc/haproxy",
     version_cmd=['haproxy', '-v'],
-    restart_cmd=['systemctl', 'restart', 'haproxy'],
-    conftest_cmd=['haproxy' '-c' '-f'],  # Need the config file as an argument.
+    restart_cmd=['sudo', 'systemctl', 'restart', 'haproxy'],
+    # Needs the config file as an argument:
+    conftest_cmd=['/usr/sbin/haproxy', '-c', '-f'],
+    haproxy_config="/etc/haproxy/haproxy.cfg",
+    crt_directory="/etc/ssl/crt/",
 )
 
 CLI_DEFAULTS_DEBIAN_WHEEZY = dict(
     server_root="/etc/haproxy",
     version_cmd=['haproxy', '-v'],
     restart_cmd=['service', 'haproxy', 'restart'],
-    conftest_cmd=['haproxy' '-c' '-f'],  # Need the config file as an argument.
+    # Needs the config file as an argument:
+    conftest_cmd=['/usr/sbin/haproxy', '-c', '-f'],
+    haproxy_config="/etc/haproxy/haproxy.cfg",
+    crt_directory="/etc/ssl/crt/",
 )
 
 CLI_DEFAULTS = {
