@@ -44,7 +44,8 @@ CLI_DEFAULTS = {
 
 def os_constant(key):
     """Get a constant value for operating system
-    :param key: name of cli constant
+
+    :param str key: name of cli constant
     :return: value of constant for active os
     """
     os_info = util.get_os_info()
