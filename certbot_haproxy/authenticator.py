@@ -10,8 +10,9 @@ HAProxy because `tls-sni-01` expects to do a TLS handshake.
 This authenticator creates its own ephemeral TCP listener on the necessary port
 in order to respond to incoming `http-01` challenges from the certificate
 authority. You need to forward port requests for `/.well-known/acme-challenge/`
-on port 80 to the configured value for `internal_port` (default:8000). This can
-be achieved by adding this example to your haproxy configuration file::
+on port 80 to the configured value for `haproxy-http-01-port` (default:8000).
+This can be achieved by adding this example to your haproxy configuration
+file::
 
     default_backend nodes
 
@@ -65,7 +66,7 @@ class HAProxyAuthenticator(standalone.Authenticator):
 
     def __init__(self, *args, **kwargs):
         super(HAProxyAuthenticator, self).__init__(*args, **kwargs)
-        self.config.http01_port = self.conf('internal_port')
+        self.config.http01_port = self.conf('haproxy_http_01_port')
 
     @classmethod
     def add_parser_arguments(cls, add):
@@ -81,10 +82,10 @@ class HAProxyAuthenticator(standalone.Authenticator):
             :param func add: The function to be called to add an argument.
         """
         add(
-            "internal-port",
+            "haproxy-http-01-port",
             help=(
-                "Port to open internally, you're expected to forward requests"
-                " to port 80 to it."
+                "Port to open internally (default=8000), you're expected to"
+                " forward requests to port 80 to it."
             ),
             type=int,
             default=8000

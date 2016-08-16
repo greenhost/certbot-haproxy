@@ -28,6 +28,9 @@
 import logging
 import os
 import glob
+import subprocess
+import re
+from distutils.version import StrictVersion
 
 import zope.component
 import zope.interface
@@ -41,6 +44,8 @@ from certbot.plugins import common
 from certbot_haproxy import constants
 
 logger = logging.getLogger(__name__)  # pylint:disable=invalid-name
+
+HAPROXY_MIN_VERSION = "1.5"
 
 
 @zope.interface.implementer(interfaces.IInstaller)
@@ -80,11 +85,32 @@ class HAProxyInstaller(common.Plugin):
             The arguments can be retrieved by asking for corresponding names
             in `self.conf([argument name])`
 
-            NOTE: This is an override a method defined in the parent, we are
-            deliberately not calling super() because it would add arguments
-            that we don't support.
+            .. note:: This is an override a method defined in the parent, we
+                are deliberately not calling super() because it would add
+                arguments that we don't support.
         """
-        pass
+        add(
+            "haproxy-crt-dir",
+            help=(
+                "Override the default certificate directory that will be"
+                " configures in HAProxy. Default for this OS is \"{}\"".format(
+                    constants.os_constant('crt_directory')
+                )
+            ),
+            type=str,
+            default=constants.os_constant('crt_directory')
+        )
+        add(
+            "haproxy-config",
+            help=(
+                "Override the default haproxy configuration file location."
+                " Default for this OS is \"{}\"".format(
+                    constants.os_constant('haproxy_config')
+                )
+            ),
+            type=str,
+            default=constants.os_constant('haproxy_config')
+        )
 
     @staticmethod
     def more_info():
@@ -107,12 +133,24 @@ class HAProxyInstaller(common.Plugin):
         :rtype: set
         """
         all_names = set()
-        for filename in glob.glob(constants.os_constant("crt_directory") +
-                                  '*' + self.crt_postfix):
-            domain = os.path.splitext(os.path.basename(filename))[0]
-            logger.info("Found domain: %s", domain)
-            all_names.add(domain)
-        logger.info("get_all_names returning:\n\t%s", all_names)
+        with open(self.conf('haproxy_config'), 'r') as config:
+            for line in config:
+
+                # Fast check for acl content..
+                if 'acl' in line:
+                    logger.info(line)
+                    matches = constants.RE_HAPROXY_DOMAIN_ACL.match(line)
+                    if matches is None:
+                        continue
+                    else:
+                        name = matches.group('name')
+                        domain = matches.group('domain')
+                        logger.info(
+                            "Found configuration \"%s\" for domain: \"%s\"",
+                            name,
+                            domain
+                        )
+                        all_names.add(domain)
         return all_names
 
     def view_config_changes(self):
@@ -133,14 +171,42 @@ class HAProxyInstaller(common.Plugin):
 
         :raises .errors.NoInstallationError when no haproxy executable can
             be found
+        :raises .errors.NoInstallationError when the default service manager
+            executable can't be found
+        :raises .errors.NotSupportedError when the installed haproxy version is
+            incompatible with this plugin
         """
-        restart_cmd = constants.os_constant("restart_cmd")[0]
-        if not util.exe_exists(restart_cmd):
+        service_mgr = constants.os_constant("service_manager")
+        if not util.exe_exists(service_mgr):
             raise errors.NoInstallationError(
-                'Cannot find HAProxy control command {0}'.format(
-                    restart_cmd
+                "Can't find the default service manager for your system:"
+                "{0}, please install it first or configure different OS"
+                " constants".format(
+                    service_mgr
                 )
             )
+
+        # Check that a supported version of HAProxy is installed.
+        version_cmd = constants.os_constant("version_cmd")
+        output = subprocess.check_output(version_cmd)
+        matches = re.match(
+            r'HA-Proxy version'
+            r' (?P<version>[0-9]{1,4}\.[0-9]{1,4}\.[0-9a-z]{1,10}).*',
+            output
+        )
+        if matches is None:
+            raise errors.NoInstallationError(
+                "It looks like HAProxy is not installed or the version might"
+                " be incompatible."
+            )
+        else:
+            version = matches.group('version')
+            if StrictVersion(version) < StrictVersion(HAPROXY_MIN_VERSION):
+                raise errors.NotSupportedError(
+                    "Version {} of HAProxy is not supported by this plugin,"
+                    " you need to install {} or higher to be"
+                    " incompatible.".format(version, HAPROXY_MIN_VERSION)
+                )
 
     def recovery_routine(self):
         """Revert all previously modified files.
@@ -168,8 +234,8 @@ class HAProxyInstaller(common.Plugin):
 
         These files are added to an internal dictionary. If the domain in
         ``domain`` already has a file in the ``crt_directory`` from
-        `.certbot_haproxy.constants` it is added to self.crt_files, otherwise it
-        is added to self.new_crt_files. These files are saved by the `.save`
+        `.certbot_haproxy.constants` it is added to self.crt_files, otherwise
+        it is added to self.new_crt_files. These files are saved by the `.save`
         function.
 
         :param str domain: domain to deploy certificate file
@@ -297,6 +363,12 @@ class HAProxyInstaller(common.Plugin):
         # Write all new files and changes:
         for filepath, contents in \
                 self.new_crt_files.items() + self.crt_files.items():
+
+            # Make sure directory of filepath exists
+            path = os.path.dirname(os.path.abspath(filepath))
+            if not os.path.exists(path):
+                os.makedirs(path)
+
             with open(filepath, 'w') as cert:
                 cert.write(contents)
         self.new_crt_files = {}
@@ -356,8 +428,10 @@ class HAProxyInstaller(common.Plugin):
         :raises .errors.MisconfigurationError: If config_test fails
 
         """
+        test_cmd = constants.os_constant('conftest_cmd').append(
+            self.conf('haproxy_crt_dir')
+        )
         try:
-            util.run_script(constants.os_constant("conftest_cmd") +
-                            [constants.os_constant("haproxy_config")])
+            util.run_script(test_cmd)
         except errors.SubprocessError as err:
             raise errors.MisconfigurationError(str(err))
