@@ -185,22 +185,24 @@ class HAProxyInstaller(common.Plugin):
         crt_filename = constants.os_constant("crt_directory") + domain + \
             self.crt_postfix
 
-        # Choose whether to make a new file or change an existing file
-        if os.path.isfile(crt_filename):
-            dic = self.crt_files
-        else:
-            dic = self.new_crt_files
-
         if not fullchain_path and not chain_path:
             raise errors.PluginError(
-                ("The haproxy plugin currently requires either"
-                 " --fullchain-path or --chain-path to install a cert.")
-            )
+                "The haproxy plugin currently requires either"
+                " --fullchain-path or --chain-path to install a cert.")
         if not key_path:
             raise errors.PluginError(
                 "The haproxy plugin requires --key-path to"
                 " install a cert.")
-        self.save_notes += "Added certificate for domain %s\n" % domain
+
+        # Choose whether to make a new file or change an existing file
+        if os.path.isfile(crt_filename):
+            dic = self.crt_files
+            self.save_notes += "Changed"
+        else:
+            self.save_notes += "Added"
+            dic = self.new_crt_files
+        self.save_notes += " certificate for domain %s\n" % domain
+
         if fullchain_path:
             with open(fullchain_path) as fullchain:
                 self.save_notes += "\t- Used fullchain path %s\n" % \
@@ -213,6 +215,7 @@ class HAProxyInstaller(common.Plugin):
                     self.save_notes += "\t- Used chain path %s\n" % chain_path
                     dic[crt_filename] = cert.read() + chain.read()
         with open(key_path) as key:
+            self.save_notes += "\t- Used key path %s\n" % key_path
             dic[crt_filename] += key.read()
 
     def supported_enhancements(self):
@@ -273,15 +276,14 @@ class HAProxyInstaller(common.Plugin):
 
         try:
             # Create Checkpoint with changed files
-            if changed_files:
-                logger.debug("Adding changed files %s to reverter",
-                             changed_files)
-                if temporary:
-                    self.reverter.add_to_temp_checkpoint(
-                        changed_files, self.save_notes)
-                else:
-                    self.reverter.add_to_checkpoint(changed_files,
-                                                    self.save_notes)
+            logger.debug("Adding changed files %s to reverter",
+                         changed_files)
+            if temporary:
+                self.reverter.add_to_temp_checkpoint(
+                    changed_files, self.save_notes)
+            else:
+                self.reverter.add_to_checkpoint(changed_files,
+                                                self.save_notes)
             # Add new files
             if new_files:
                 logger.debug("Adding new files %s to reverter", new_files)
