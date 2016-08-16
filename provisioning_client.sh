@@ -98,7 +98,6 @@ global
         # Default SSL material locations
         # ca-base /etc/ssl/certs
         # crt-base /etc/ssl/private
-        crt /etc/ssl/crt
 
         # Default ciphers to use on SSL-enabled listening sockets.
         # Cipher suites chosen by following logic:
@@ -131,7 +130,7 @@ frontend http-in
     mode http
     # LE HAProxy installer should combine certs and place them here..
     # Uncomment when ready.. Needs ACL to work per site.
-    # bind *:443 ssl crt /lehaproxy/working/certs/
+    # bind *:443 ssl crt /etc/ssl/crt
 
     acl is_certbot path_beg -i /.well-known/acme-challenge
     use_backend certbot if is_certbot
