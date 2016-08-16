@@ -1,46 +1,47 @@
-"""
-    HAProxy Authenticator.
+"""HAProxy Authenticator.
 
-    This authenticator creates its own ephemeral TCP listener on the necessary
-    port in order to respond to incoming `http-01` challenges from the
-    certificate authority. You need to forward port requests for
-    `/.well-known/acme-challenge/` on port 80 to the `http-01` port
-    (default:8000). You may do this like this for example:
+The HAProxy Authenticator is an extension of the "standalone" authenticator
+that is part of certbot. It limits its functionality to only support the
+`http-01` challenge because `tls-sni-01` checks the challenge by connecting to
+port 443.  We can't proxy requests to certbot because we can't see the
+requested uri until the request is decrypted, and we can't do decryption in
+HAProxy because `tls-sni-01` expects to do a TLS handshake.
 
-    ```
-        default_backend nodes
+This authenticator creates its own ephemeral TCP listener on the necessary port
+in order to respond to incoming `http-01` challenges from the certificate
+authority. You need to forward port requests for `/.well-known/acme-challenge/`
+on port 80 to the configured value for `internal_port` (default:8000). This can
+be achieved by adding this example to your haproxy configuration file::
 
-        acl is_cerbot path_beg -i /.well-known/acme-challenge
-        use_backend certbot if is_cerbot
+    default_backend nodes
 
-        backend certbot
-            log global
-            mode http
-            server certbot 127.0.0.1:8000
+    acl is_cerbot path_beg -i /.well-known/acme-challenge
+    use_backend certbot if is_cerbot
 
-        backend nodes
-            log global
-            mode http
-            option tcplog
-            balance roundrobin
-            option forwardfor
-            option http-server-close
-            option httpclose
-            http-request set-header X-Forwarded-Port %[dst_port]
-            http-request add-header X-Forwarded-Proto https if { ssl_fc }
-            option httpchk HEAD / HTTP/1.1\r\nHost:localhost
-            server node1 127.0.0.1:8080 check
-            server node2 127.0.0.1:8080 check
-            server node3 127.0.0.1:8080 check
-            server node4 127.0.0.1:8080 check
-    ```
+    backend certbot
+        log global
+        mode http
+        server certbot 127.0.0.1:8000
 
-    The Authenticator is simply an extension of the "standalone" plugin that is
-    part of certbot. It limits its functionality to only support the `http-01`
-    challenge because checks the challenge by connecting to port 443. We can't
-    proxy requests to certbot because we can't see the requested uri until the
-    request is decrypted, and we can't do decryption in HAProxy because
-    `tls-sni-01` expects to do a TLS handshake.
+    backend nodes
+        log global
+        mode http
+        option tcplog
+        balance roundrobin
+        option forwardfor
+        option http-server-close
+        option httpclose
+        http-request set-header X-Forwarded-Port %[dst_port]
+        http-request add-header X-Forwarded-Proto https if { ssl_fc }
+        option httpchk HEAD / HTTP/1.1\\r\\nHost:localhost
+        server node1 127.0.0.1:8080 check
+        server node2 127.0.0.1:8080 check
+        server node3 127.0.0.1:8080 check
+        server node4 127.0.0.1:8080 check
+
+For instructions on how to make HAProxy serve certificates that were created
+with this authenticator, read the documentation of the
+`.certbot_haproxy.installer`
 """
 import logging
 
@@ -73,9 +74,11 @@ class HAProxyAuthenticator(standalone.Authenticator):
             The arguments can be retrieved by asking for corresponding names
             in `self.conf([argument name])`
 
-            NOTE: This is an override a method defined in the parent, we are
-            deliberately not calling super() because it would add arguments
-            that we don't support.
+            .. note:: This overrides a method defined in the parent, we
+                are deliberately not calling super() because it would add
+                arguments that are not supported.
+
+            :param func add: The function to be called to add an argument.
         """
         add(
             "internal-port",

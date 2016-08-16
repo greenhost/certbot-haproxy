@@ -2,7 +2,28 @@
     HAProxy Installer.
 
     This installer combines the certificate files into one file and places them
-    in the specified directory so HAProxy can use them.
+    in the specified directory so HAProxy can use them. The directory can be
+    specified in `.certbot_haproxy.constants` and has to be configured with
+    HAProxy using the crt option for the bind directive::
+
+        frontend http-in
+            bind *:80
+            mode http
+            bind *:443 ssl crt /etc/ssl/crt/
+
+    .. note:: You need to install one (default) certificate into this
+        directory, otherwise HAProxy will not be able to start.
+
+    .. note:: You need at least version 1.5 of HAProxy with OpenSSL built in.
+
+    HAProxy is restarted by the installer with the restart_cmd from the
+    `.certbot_haproxy.constants`. If you do not want to run lehaproxy as root
+    (this is recommended), add this line to your sudoers file::
+
+        $USER ALL=NOPASSWD: /bin/systemctl restart haproxy
+
+    Be sure to replace `$USER` with the user that will be running the lehaproxy
+    installer.
 """
 import logging
 import os
@@ -27,7 +48,7 @@ logger = logging.getLogger(__name__)  # pylint:disable=invalid-name
 class HAProxyInstaller(common.Plugin):
     """HAProxy Installer."""
 
-    description = "Certbot installer for HAProxy."
+    description = "Certbot certificate installer for HAProxy."
 
     def __init__(self, *args, **kwargs):
         super(HAProxyInstaller, self).__init__(*args, **kwargs)
@@ -140,8 +161,26 @@ class HAProxyInstaller(common.Plugin):
 
         .. note:: This doesn't save the files!
 
+        HAProxy needs the certificates and private key to be in one file. The
+        private key in key_path is combined with the fullchain path if one is
+        provided.  If no fullchain path is provided, the cert_path and the
+        chain_path are used to create a similar document.
+
+        These files are added to an internal dictionary. If the domain in
+        ``domain`` already has a file in the ``crt_directory`` from
+        `.certbot_haproxy.constants` it is added to self.crt_files, otherwise it
+        is added to self.new_crt_files. These files are saved by the `.save`
+        function.
+
+        :param str domain: domain to deploy certificate file
+        :param str cert_path: absolute path to the certificate file
+        :param str key_path: absolute path to the private key file
+        :param str chain_path: absolute path to the certificate chain file
+        :param str fullchain_path: absolute path to the certificate fullchain
+            file (cert plus chain)
+
         :raises errors.PluginError: When unable to deploy certificate due to
-            a lack of directives or configuration
+            a lack of information
         """
         crt_filename = constants.os_constant("crt_directory") + domain + \
             self.crt_postfix
@@ -211,6 +250,8 @@ class HAProxyInstaller(common.Plugin):
 
     def save(self, title=None, temporary=False):
         """Saves all changes to the configuration files.
+
+        This saves new files and file changes to the certificate directory.
 
         :param str title: The title of the save. If a title is given, the
             configuration will be saved as a new checkpoint and put in a
@@ -295,7 +336,7 @@ class HAProxyInstaller(common.Plugin):
         logger.warn("get_all_certs_keys called, not doing anything :(")
 
     def restart(self):
-        """Runs a config test and reloads the Apache server.
+        """Runs a config test and restarts HAProxy.
 
         :raises .errors.MisconfigurationError: If either the config test
             or reload fails.
@@ -308,7 +349,7 @@ class HAProxyInstaller(common.Plugin):
             raise errors.MisconfigurationError(str(err))
 
     def config_test(self):  # pylint: disable=no-self-use
-        """Check the configuration of HaProxy for errors.
+        """Check the configuration of HAProxy for errors.
 
         :raises .errors.MisconfigurationError: If config_test fails
 
