@@ -267,10 +267,6 @@ class HAProxyInstaller(common.Plugin):
         crt_filename = constants.os_constant("crt_directory") + domain + \
             self.crt_postfix
 
-        if not fullchain_path and not chain_path:
-            raise errors.PluginError(
-                "The haproxy plugin currently requires either"
-                " --fullchain-path or --chain-path to install a cert.")
         if not key_path:
             raise errors.PluginError(
                 "The haproxy plugin requires --key-path to"
@@ -290,12 +286,17 @@ class HAProxyInstaller(common.Plugin):
                 self.save_notes += "\t- Used fullchain path %s\n" % \
                     fullchain_path
                 dic[crt_filename] = fullchain.read()
-        elif cert_path and chain_path:
+        elif cert_path:
             with open(cert_path) as cert:
+                self.save_notes += "\t- Used cert path %s\n" % cert_path
+                dic[crt_filename] = cert.read()
+            if chain_path:
                 with open(chain_path) as chain:
-                    self.save_notes += "\t- Used cert path %s\n" % cert_path
+                    dic[crt_filename] += chain.read()
                     self.save_notes += "\t- Used chain path %s\n" % chain_path
-                    dic[crt_filename] = cert.read() + chain.read()
+            else:
+                self.save_notes += "\t- No chain path provided\n"
+
         with open(key_path) as key:
             self.save_notes += "\t- Used key path %s\n" % key_path
             dic[crt_filename] += key.read()
@@ -450,9 +451,9 @@ class HAProxyInstaller(common.Plugin):
         :raises .errors.MisconfigurationError: If config_test fails
 
         """
-        test_cmd = constants.os_constant('conftest_cmd').append(
-            self.conf('haproxy_crt_dir')
-        )
+        test_cmd = constants.os_constant('conftest_cmd') + \
+            [constants.os_constant('haproxy_config')]
+        print "Running test command: ", str(test_cmd)
         try:
             util.run_script(test_cmd)
         except errors.SubprocessError as err:
