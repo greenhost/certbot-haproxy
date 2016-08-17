@@ -56,7 +56,7 @@ class ConstantsTest(unittest.TestCase):
             constants.os_analyse(caching_disabled=True)
 
     @patch('constants.CLI_DEFAULTS', return_value=CLI_DEFAULTS)
-    @patch('certbot.util.get_os_info', return_value=['windows', '2008'])
+    @patch('certbot.util.get_os_info', return_value=['centos', '7'])
     def test_os_analyse_unsupported_distro(self, *mocks):
         """ Test an unsupported OS/distro.. """
         with self.assertRaises(NotSupportedError):
