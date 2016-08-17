@@ -96,6 +96,9 @@ class HAProxyAuthenticator(standalone.Authenticator):
         """
             Challenges supported by this plugin: only http-01
             See introduction for reasoning.
+
+            :returns: List of supported challenges
+            :rtype: list
         """
         return [challenges.HTTP01]
 

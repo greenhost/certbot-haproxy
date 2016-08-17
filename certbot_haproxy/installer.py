@@ -1,5 +1,6 @@
 """
-    HAProxy Installer.
+    HAProxy Installer
+    =================
 
     This installer combines the certificate files into one file and places them
     in the specified directory so HAProxy can use them. The directory can be
@@ -27,7 +28,6 @@
 """
 import logging
 import os
-import glob
 import subprocess
 import re
 from distutils.version import StrictVersion
@@ -117,6 +117,9 @@ class HAProxyInstaller(common.Plugin):
         """
             This info string only appears in the curses UI in the plugin
             selection sequence.
+
+            :returns: More information about this module.
+            :rtype: str
         """
         return (
             "This installer combines the certificate files into one file and"
@@ -124,18 +127,31 @@ class HAProxyInstaller(common.Plugin):
         )
 
     def get_all_names(self):
-        """Returns all names that have SSL certificates
+        """
+            Returns all names that are eligible for a SSL certificate.
 
-        TODO: Should also return other domains on which SSL can be activated
+            The certbot Installer plugin interface defines a function that
+            should be implemented called
+            `certbot.interfaces.get_all_names()` which finds domain names for
+            which the plugin can request a certificate. By default this
+            function implements this function by scanning the HAProxy
+            configuration file for ACL rules that are formatted like this::
 
-        :returns: All filenames ending in self.crt_postfix in the
-            `crt_directory`
+                acl [arbitrary_name] hdr(host) -i [domainname.tld]
+
+            This is done by applying a regular expression to every line in the
+            configuration file that contains `acl`, optionally prefixed by
+            white space characters. You can change the regular expression if
+            you are using a different pattern. The constant's name is
+            `RE_HAPROXY_DOMAIN_ACL` which can be found in
+            `.certbot_haproxy.constants`.
+
+        :returns: Domain names in ACL rules in the HAProxy configuration file.
         :rtype: set
         """
         all_names = set()
         with open(self.conf('haproxy_config'), 'r') as config:
             for line in config:
-
                 # Fast check for acl content..
                 if 'acl' in line:
                     logger.info(line)
@@ -289,8 +305,11 @@ class HAProxyInstaller(common.Plugin):
 
         Currently supports nothing. Possibilities: ['redirect', 'http-header',
         'ocsp-stapling', 'spdy'] (.certbot.constants.ENHANCEMENTS)
+
+        :returns: List of supported enhancements.
+        :rtype: list
         """
-        return str(self._enhance_func.keys())
+        return list(self._enhance_func.keys())
 
     def enhance(self, domain, enhancement, options=None):
         """Enhance configuration.
@@ -328,6 +347,9 @@ class HAProxyInstaller(common.Plugin):
 
         :param bool temporary: Indicates whether the changes made will
             be quickly reversed in the future (ie. challenges)
+
+        :returns: True if successful
+        :rtype: bool
 
         :raises .errors.PluginError: If there was an error in
             an attempt to save the configuration, or an error creating a
