@@ -42,6 +42,7 @@ from certbot import util
 from certbot import reverter
 from certbot.plugins import common
 from certbot_haproxy import constants
+from certbot_haproxy.util import create_self_signed_cert
 
 logger = logging.getLogger(__name__)  # pylint:disable=invalid-name
 
@@ -110,6 +111,20 @@ class HAProxyInstaller(common.Plugin):
             ),
             type=str,
             default=constants.os_constant('haproxy_config')
+        )
+        add(
+            "no-fall-back-cert",
+            help=(
+                "HAProxy will not start without a certificate in the"
+                " certificate directory of the bind directive. Also, the first"
+                " certificate in the directory is chosen as the fall back"
+                " certificate automatically. Because of this, the plugin"
+                " creates a self-signed fall back certificate in the"
+                " certificate directory if it isn't already present. You can"
+                " disable this behaviour by supplying this argument."
+            ),
+            type=bool,
+            default=False
         )
 
     @staticmethod
@@ -183,14 +198,15 @@ class HAProxyInstaller(common.Plugin):
 
     @staticmethod
     def prepare():
-        """Check if we can restart HAProxy when we are done.
+        """
+            Check if we can restart HAProxy when we are done.
 
-        :raises .errors.NoInstallationError when no haproxy executable can
-            be found
-        :raises .errors.NoInstallationError when the default service manager
-            executable can't be found
-        :raises .errors.NotSupportedError when the installed haproxy version is
-            incompatible with this plugin
+            :raises .errors.NoInstallationError when no haproxy executable can
+                be found
+            :raises .errors.NoInstallationError when the default service
+                manager executable can't be found
+            :raises .errors.NotSupportedError when the installed haproxy
+                version is incompatible with this plugin
         """
         service_mgr = constants.os_constant("service_manager")
         if not util.exe_exists(service_mgr):
@@ -223,6 +239,32 @@ class HAProxyInstaller(common.Plugin):
                     " you need to install {} or higher to be"
                     " incompatible.".format(version, HAPROXY_MIN_VERSION)
                 )
+
+    def _fall_back_cert(self):
+        """
+            Generate a self-signed certificate as a fall-back if it is not yet
+            installed.
+
+            HAProxy will not start without a certificate in the
+            certificate directory of the bind directive. Also, the first
+            certificate in the directory is chosen as the fall back
+            certificate automatically. Because of this, the plugin
+            creates a self-signed fall back certificate in the
+            certificate directory if it isn't already present. You can
+            disable this behaviour by supplying this argument.
+        """
+        if self.conf("no_fall_back_cert"):
+            return
+
+        fall_back_full_chain = os.path.join(
+            self.conf("haproxy-crt-dir"), "__fallback.pem"
+        )
+        if not os.path.isfile(fall_back_full_chain):
+            key, cert = create_self_signed_cert()
+            self.save_notes += "Creating fallback cert \"{}\"".format(
+                fall_back_full_chain
+            )
+            self.new_crt_files[fall_back_full_chain] = key + cert
 
     def recovery_routine(self):
         """Revert all previously modified files.
@@ -264,8 +306,9 @@ class HAProxyInstaller(common.Plugin):
         :raises errors.PluginError: When unable to deploy certificate due to
             a lack of information
         """
-        crt_filename = constants.os_constant("crt_directory") + domain + \
-            self.crt_postfix
+        crt_filename = os.path.join(
+            self.conf("haproxy-crt-dir"), domain + self.crt_postfix
+        )
 
         if not key_path:
             raise errors.PluginError(
@@ -300,6 +343,9 @@ class HAProxyInstaller(common.Plugin):
         with open(key_path) as key:
             self.save_notes += "\t- Used key path %s\n" % key_path
             dic[crt_filename] += key.read()
+
+        # Check that the fallback cert is installed
+        self._fall_back_cert()
 
     def supported_enhancements(self):
         """Currently supported enhancements.
