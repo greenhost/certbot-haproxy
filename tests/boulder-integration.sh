@@ -26,13 +26,13 @@ common_no_force_renew() {
     certbot_test_no_force_renew \
         --authenticator certbot-haproxy:haproxy-authenticator\
         --installer certbot-haproxy:haproxy-installer\
+        --certbot-haproxy:haproxy-installer-haproxy-ca-common-name \
+            "h2ppy\ h2cker\ fake\ CA" \
         "$@"
 }
 
 common() {
     common_no_force_renew \
-        --authenticator certbot-haproxy:haproxy-authenticator\
-        --installer certbot-haproxy:haproxy-installer\
         --renew-by-default \
         "$@"
 }

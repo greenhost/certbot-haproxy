@@ -19,7 +19,7 @@ certbot_test () {
 
 certbot_test_no_force_renew () {
     certbot \
-        --server "${SERVER:-http://localhost:4000/directory}" \
+        --server "${SERVER:-http://boulder.local:4000/directory}" \
         --no-verify-ssl \
         --tls-sni-01-port 5001 \
         --http-01-port 8000 \

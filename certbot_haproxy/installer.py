@@ -123,7 +123,7 @@ class HAProxyInstaller(common.Plugin):
                 " 'h2ppy h2cker fake CA' that is used by the local boulder."
             ),
             type=unicode,
-            default=u'h2ppy h2cker fake CA'
+            default=u'Let\'s Encrypt Authority X3'
         )
         add(
             "no-fall-back-cert",
@@ -325,7 +325,7 @@ class HAProxyInstaller(common.Plugin):
 
         if not key_path:
             raise errors.PluginError(
-                "The haproxy plugin requires --key-path to"
+                "The haproxy plugin requires a key path to"
                 " install a cert.")
 
         # Choose whether to make a new file or change an existing file
@@ -338,21 +338,29 @@ class HAProxyInstaller(common.Plugin):
         self.save_notes += " certificate for domain %s\n" % domain
 
         if fullchain_path:
+            if not os.path.isfile(fullchain_path):
+                raise errors.PluginError("fullchain_path is not a file")
             with open(fullchain_path) as fullchain:
                 self.save_notes += "\t- Used fullchain path %s\n" % \
                     fullchain_path
                 dic[crt_filename] = fullchain.read()
         elif cert_path:
+            if not os.path.isfile(cert_path):
+                raise errors.PluginError("cert_path is not a file")
             with open(cert_path) as cert:
                 self.save_notes += "\t- Used cert path %s\n" % cert_path
                 dic[crt_filename] = cert.read()
             if chain_path:
+                if not os.path.isfile(chain_path):
+                    raise errors.PluginError("chain_path is not a file")
                 with open(chain_path) as chain:
                     dic[crt_filename] += chain.read()
                     self.save_notes += "\t- Used chain path %s\n" % chain_path
             else:
                 self.save_notes += "\t- No chain path provided\n"
 
+        if not os.path.isfile(key_path):
+            raise errors.PluginError("key_path is not a file")
         with open(key_path) as key:
             self.save_notes += "\t- Used key path %s\n" % key_path
             dic[crt_filename] += key.read()
@@ -538,8 +546,7 @@ class HAProxyInstaller(common.Plugin):
 
         """
         test_cmd = constants.os_constant('conftest_cmd') + \
-            [constants.os_constant('haproxy_config')]
-        print "Running test command: ", str(test_cmd)
+            [self.conf('haproxy_config')]
         try:
             util.run_script(test_cmd)
         except errors.SubprocessError as err:
