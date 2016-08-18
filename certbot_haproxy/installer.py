@@ -496,35 +496,55 @@ class HAProxyInstaller(common.Plugin):
             path - File path to configuration file.
         :rtype: set
         """
-        return list(self._get_certs_keys())
+        return list(self._get_all_certs_keys())
 
-    def _get_certs_keys(self):
-        """Generator for get_all_certs_keys"""
-        for filepath in glob.glob(
-                self.conf("haproxy-crt-dir") + '/*' + self.crt_postfix):
-            with open(filepath) as pem:
-                contents = pem.read()
-                try:
-                    cert = crypto.load_certificate(
-                        crypto.FILETYPE_PEM, contents)
-                    key = crypto.load_privatekey(crypto.FILETYPE_PEM, contents)
-                    if cert.get_issuer().CN \
-                            == self.conf('haproxy-ca-common-name') \
-                            and key.check():
+    def _get_all_certs_keys(self):
+        """ Generator for get_all_certs_keys """
+        globbed_path = glob.glob(
+            os.path.join(
+                self.conf("haproxy-crt-dir"), '*' + self.crt_postfix
+            )
+        )
+        for filepath in globbed_path:
+            try:
+                with open(filepath) as pem:
+                    contents = pem.read()
+                    if self._cert_key_check(contents, filepath):
                         yield (filepath, filepath, self.conf("haproxy-config"))
-                    else:
-                        logger.info(
-                            "CN %s is not %s, ignoring certificate %s",
-                            cert.get_issuer().CN,
-                            self.conf('haproxy-ca-common-name'),
-                            filepath)
+            except IOError, err:
+                logger.error(
+                    "Can't access \"%s\", reason:\n  %s",
+                    filepath,
+                    err
+                )
 
-                except TypeError:
-                    logger.warn("Could not read certificate, wrong type"
-                                " (not PEM)")
-                # Documentation says it raises "Error"
-                except Exception, err:  # pylint: disable=broad-except
-                    logger.error("Unexpected error! %s", err)
+    def _cert_key_check(self, pem, filepath):
+        """
+            Check certificate validity and that the issuer is Let's Encrypt
+
+        :returns: True if valid LE certificate, False if not.
+        :rtype: bool
+        """
+        try:
+            cert = crypto.load_certificate(crypto.FILETYPE_PEM, pem)
+            key = crypto.load_privatekey(crypto.FILETYPE_PEM, pem)
+            issuer = cert.get_issuer().CN
+        except TypeError:
+            logger.warn("Could not read certificate, wrong type (not PEM)")
+        # Documentation says it raises "Error"
+        except Exception, err:  # pylint: disable=broad-except
+            logger.error("Unexpected error! %s", err)
+
+        if issuer == self.conf('haproxy-ca-common-name') and key.check():
+            return True
+        else:
+            logger.info(
+                "CN %s is not %s, ignoring certificate %s",
+                cert.get_issuer().CN,
+                self.conf('haproxy-ca-common-name'),
+                filepath
+            )
+            return False
 
     def restart(self):
         """Runs a config test and restarts HAProxy.
