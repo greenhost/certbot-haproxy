@@ -34,11 +34,10 @@ cd "/${PROJECT_NAME}"
 pip install --editable .
 
 cat <<EOF >> /etc/hosts
-${PROJECT_SERVER_IP}   le.wtf
-${PROJECT_SERVER_IP}   le1.wtf
-${PROJECT_SERVER_IP}   le2.wtf
-${PROJECT_SERVER_IP}   le3.wtf
-${PROJECT_SERVER_IP}   nginx.wtf
+${PROJECT_CLIENT_IP}   le.wtf
+${PROJECT_CLIENT_IP}   le1.wtf
+${PROJECT_CLIENT_IP}   le2.wtf
+${PROJECT_CLIENT_IP}   le3.wtf
 ${PROJECT_CLIENT_IP}   testsite.nl
 EOF
 

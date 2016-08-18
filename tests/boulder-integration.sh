@@ -114,3 +114,5 @@ common revoke --cert-path "$root/conf/live/le.wtf/cert.pem"
 # revoke by cert key
 common revoke --cert-path "$root/conf/live/le2.wtf/cert.pem" \
        --key-path "$root/conf/live/le2.wtf/privkey.pem"
+
+echo "\n\nFinished successfully!"
