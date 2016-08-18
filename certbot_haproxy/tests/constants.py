@@ -3,7 +3,6 @@ from mock import patch
 from certbot.errors import NotSupportedError
 from certbot_haproxy import constants
 
-
 class ConstantsTest(unittest.TestCase):
     """
         Test that the right constants are chosen and the correct warnings are
@@ -28,7 +27,7 @@ class ConstantsTest(unittest.TestCase):
         }
     }
 
-    @patch('constants.CLI_DEFAULTS', return_value=CLI_DEFAULTS)
+    @patch('certbot_haproxy.constants.CLI_DEFAULTS', new=CLI_DEFAULTS)
     @patch('certbot.util.get_os_info', return_value=['debian', '8'])
     def test_os_analyse_supported(self, *mocks):
         """ Test a supported version.. """
@@ -37,7 +36,7 @@ class ConstantsTest(unittest.TestCase):
             ('debian', '8')
         )
 
-    @patch('constants.CLI_DEFAULTS', return_value=CLI_DEFAULTS)
+    @patch('certbot_haproxy.constants.CLI_DEFAULTS', new=CLI_DEFAULTS)
     @patch('certbot.util.get_os_info', return_value=['debian', '9'])
     @patch('certbot_haproxy.constants.logger')
     def test_os_analyse_unsupported_new(self, m_logger, *mocks):
@@ -48,21 +47,21 @@ class ConstantsTest(unittest.TestCase):
         )
         m_logger.warn.assert_called_once()
 
-    @patch('constants.CLI_DEFAULTS', return_value=CLI_DEFAULTS)
+    @patch('certbot_haproxy.constants.CLI_DEFAULTS', new=CLI_DEFAULTS)
     @patch('certbot.util.get_os_info', return_value=['debian', '6'])
     def test_os_analyse_unsupported_old(self, *mocks):
         """ Test an unsupported too old version.. """
         with self.assertRaises(NotSupportedError):
             constants.os_analyse(caching_disabled=True)
 
-    @patch('constants.CLI_DEFAULTS', return_value=CLI_DEFAULTS)
+    @patch('certbot_haproxy.constants.CLI_DEFAULTS', new=CLI_DEFAULTS)
     @patch('certbot.util.get_os_info', return_value=['centos', '7'])
     def test_os_analyse_unsupported_distro(self, *mocks):
         """ Test an unsupported OS/distro.. """
         with self.assertRaises(NotSupportedError):
             constants.os_analyse(caching_disabled=True)
 
-    @patch('constants.CLI_DEFAULTS', return_value=CLI_DEFAULTS)
+    @patch('certbot_haproxy.constants.CLI_DEFAULTS', new=CLI_DEFAULTS)
     @patch('certbot.util.get_os_info', return_value=['ubuntu', '15.06'])
     @patch('certbot_haproxy.constants.logger')
     def test_os_analyse_between_versions(self, m_logger, *mocks):

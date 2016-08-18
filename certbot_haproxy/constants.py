@@ -120,7 +120,6 @@ def os_analyse():
     os_info = util.get_os_info()
     distro = os_info[0].lower()
     version = os_info[1]
-
     if distro not in CLI_DEFAULTS:
         raise errors.NotSupportedError(
             "We're sorry, your OS  %s %s is currently not supported :("
