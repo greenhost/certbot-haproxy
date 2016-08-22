@@ -3,9 +3,6 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to certbot-haproxy's documentation!
-==============================================
-
 Contents:
 
 .. toctree::
@@ -21,6 +18,7 @@ Contents:
 .. automodule:: certbot_haproxy
    :members:
 
+.. include:: ../README.rst
 
 Indices and tables
 ==================
@@ -28,4 +26,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
