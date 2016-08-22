@@ -56,7 +56,6 @@ agree-tos = True
 no-self-upgrade = True
 register-unsafely-without-email = True
 text = True
-domains testsite.nl
 debug = True
 verbose = True
 authenticator certbot-haproxy:haproxy-authenticator
@@ -82,7 +81,8 @@ EOF
 # TODO: Does this even work with the `chroot` directive?
 usermod -a -G vagrant haproxy
 
-mkdir -p /opt/cerbot/haproxy_fullchains
+mkdir -p /opt/certbot/haproxy_fullchains
+chown -R vagrant: /opt/certbot/
 
 cat <<EOF > /etc/haproxy/haproxy.cfg
 global
@@ -130,7 +130,7 @@ frontend http-in
     # needs to be installed *before* HAProxy will be able to start when this
     # directive is not commented.
     #
-    ## bind *:443 ssl crt /opt/cerbot/haproxy_fullchains
+    ## bind *:443 ssl crt /opt/certbot/haproxy_fullchains
 
     # Forward Cerbot verification requests to the certbot-haproxy plugin
     acl is_certbot path_beg -i /.well-known/acme-challenge
