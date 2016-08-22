@@ -1,6 +1,8 @@
 HAProxy plugin for Certbot
 ==========================
 
+.. contents:: Table of Contents
+
 Installing: Requirements
 ------------------------
 
