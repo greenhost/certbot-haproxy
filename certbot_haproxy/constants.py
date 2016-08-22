@@ -73,7 +73,7 @@ CLI_DEFAULTS_DEBIAN_BASED_SYSTEMD_OS = dict(
     conftest_cmd=['/usr/sbin/haproxy', '-c', '-f'],
     haproxy_config='/etc/haproxy/haproxy.cfg',
     # Needs to be writeable by the user that will run certbot
-    crt_directory='/opt/cerbot/haproxy_fullchains',
+    crt_directory='/opt/certbot/haproxy_fullchains',
 )
 
 CLI_DEFAULTS_DEBIAN_BASED_PRE_SYSTEMD_OS = dict(
@@ -84,7 +84,7 @@ CLI_DEFAULTS_DEBIAN_BASED_PRE_SYSTEMD_OS = dict(
     conftest_cmd=['/usr/sbin/haproxy', '-c', '-f'],
     haproxy_config='/etc/haproxy/haproxy.cfg',
     # Needs to be writeable by the user that will run certbot
-    crt_directory='/opt/cerbot/haproxy_fullchains',
+    crt_directory='/opt/certbot/haproxy_fullchains',
 )
 
 CLI_DEFAULTS = {

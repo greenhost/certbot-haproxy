@@ -67,6 +67,19 @@ ufw --force enable
 .. warning: You probably want a little more protection for a production proxy
    than just this simple firewall, but it's out of the scope of this readme.
 
+Now that we have all dependencies, it's time to start a process that may take
+quite some time to complete. HAProxy comes with a DH parameters file that is
+considered weak. We need to generate a new dhparams.pem file with a prime of at
+least ``2048`` bit length, you can also opt for ``3072`` or ``4096``. This can
+take hours on lower specification hardware, but will still take minutes on
+faster hardware, especially with ``4096`` bit primes. Run this is in a separate
+ssh session or uses ``screen`` of ``tmux`` to allow this to run in the
+background.
+
+```
+openssl dhparam -out /opt/certbot/dhparams.pem 2048
+```
+
 Now set a hostname.
 
 ```
@@ -153,8 +166,8 @@ together a configuration that works for you.
 ```
 cat <<EOF > /etc/haproxy/haproxy.cfg
 global
-    log /dev/log    local0
-    log /dev/log    local1 notice
+    log /dev/log local0
+    log /dev/log local1 notice
     chroot /var/lib/haproxy
     stats socket /run/haproxy/admin.sock mode 660 level admin
     stats timeout 30s
@@ -164,13 +177,16 @@ global
 
     # Default ciphers to use on SSL-enabled listening sockets.
     # Cipher suites chosen by following logic:
+    #  - Authenticated ciphers first
+    #  - SHA384/256 first, then SHA for compatibility
     #  - Bits of security 128>256 (weighing performance vs added security)
     #  - Key exchange: EECDH>DHE (faster first)
     #  - Mode: GCM>CBC (streaming cipher over block cipher)
     #  - Ephemeral: All use ephemeral key exchanges
     #  - Explicitly disable weak ciphers and SSLv3
-    ssl-default-bind-ciphers AES128+AESGCM+EECDH:AES128+EECDH:AES128+AESGCM+DHE:AES128+EDH:AES256+AESGCM+EECDH:AES256+EECDH:AES256+AESGCM+EDH:AES256+EDH:!SHA:!MD5:!RC4:!DES:!DSS
-    ssl-default-bind-options no-sslv3
+    ssl-default-bind-ciphers AES128+AESGCM+EECDH+SHA256:AES128+EECDH:AES128+AESGCM+DHE:AES128+EDH:AES256+AESGCM+EECDH:AES256+EECDH:AES256+AESGCM+EDH:AES256+EDH:-SHA:AES128+AESGCM+EECDH+SHA256:AES128+EECDH:AES128+AESGCM+DHE:AES128+EDH:AES256+AESGCM+EECDH:AES256+EECDH:AES256+AESGCM+EDH:AES256+EDH:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!3DES:!DSS
+    ssl-default-bind-options no-sslv3 no-tls-tickets force-tlsv12
+    ssl-dh-param-file /opt/certbot/dhparams.pem
 
 defaults
     log     global
@@ -252,8 +268,8 @@ can add this to your configuration file:
 
 ```
 cat <<EOF >> $HOME/.config/letsencrypt/cli.ini
-authenticator certbot-haproxy:haproxy-authenticator
-installer certbot-haproxy:haproxy-installer
+authenticator=certbot-haproxy:haproxy-authenticator
+installer=certbot-haproxy:haproxy-installer
 EOF
 ```
 
@@ -269,7 +285,8 @@ to set in order for Certbot to generate a certificate for you.
 .. _TOS: https://letsencrypt.org/documents/LE-SA-v1.1.1-August-1-2016.pdf
 
 After you run certbot successfully once, there will be 2 certificate files in
-the certificate directory.
+the certificate directory. This is a pre-requisite for HAProxy to start with
+the ``bind *:443 [..]`` directive in the configuration.
 
 Development: Getting started
 -----------------------------
@@ -299,7 +316,7 @@ config-dir=~/projects/certbot-haproxy/working/config
 EOF
 ```
 
-Now you can run cerbot without root privileges.
+Now you can run Certbot without root privileges.
 
 Further time savers during development..
 ----------------------------------------
@@ -323,12 +340,13 @@ reasons.
 
 
 cat <<EOF >> ~/.config/letsencrypt/cli.ini
-agree-tos
-no-self-upgrade
-register-unsafely-without-email
-text
-domain example.org
-configurator certbot-haproxy:haproxy
+agree-tos=True
+no-self-upgrade=True
+register-unsafely-without-email=True
+text=True
+domain=example.org
+authenticator=certbot-haproxy:haproxy-authenticator
+installer=certbot-haproxy:haproxy-installer
 EOF
 
 
