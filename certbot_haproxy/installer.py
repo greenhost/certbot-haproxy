@@ -81,8 +81,6 @@ class HAProxyInstaller(common.Plugin):
         #: Dict of supported enhancement functions:
         self._enhance_func = {}
 
-        print self.get_all_certs_keys()
-
     @classmethod
     def add_parser_arguments(cls, add):
         """
