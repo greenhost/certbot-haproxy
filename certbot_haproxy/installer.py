@@ -31,8 +31,8 @@ import os
 import glob
 import subprocess
 import re
-from OpenSSL import crypto
 from distutils.version import StrictVersion
+from OpenSSL import crypto
 
 import zope.component
 import zope.interface
@@ -80,6 +80,8 @@ class HAProxyInstaller(common.Plugin):
 
         #: Dict of supported enhancement functions:
         self._enhance_func = {}
+
+        print self.get_all_certs_keys()
 
     @classmethod
     def add_parser_arguments(cls, add):
