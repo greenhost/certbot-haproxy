@@ -16,8 +16,8 @@ file::
 
     default_backend nodes
 
-    acl is_cerbot path_beg -i /.well-known/acme-challenge
-    use_backend certbot if is_cerbot
+    acl is_certbot path_beg -i /.well-known/acme-challenge
+    use_backend certbot if is_certbot
 
     backend certbot
         log global

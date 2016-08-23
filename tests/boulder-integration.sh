@@ -46,7 +46,8 @@ export CSR_PATH="${root}/csr.der" KEY_PATH="${root}/key.pem" \
 ./examples/generate-csr.sh le3.wtf
 common auth --csr "$CSR_PATH" \
        --cert-path "${root}/csr/cert.pem" \
-       --chain-path "${root}/csr/chain.pem"
+       --chain-path "${root}/csr/chain.pem" \
+       --fullchain-path "${root}/csr/fullchain.pem"
 openssl x509 -in "${root}/csr/cert.pem" -text
 openssl x509 -in "${root}/csr/chain.pem" -text
 
@@ -100,7 +101,8 @@ SAN="DNS:ecdsa.le.wtf" openssl req -new -sha256 \
     -out "${root}/csr-p384.der"
 common auth --csr "${root}/csr-p384.der" \
     --cert-path "${root}/csr/cert-p384.pem" \
-    --chain-path "${root}/csr/chain-p384.pem"
+    --chain-path "${root}/csr/chain-p384.pem" \
+    --fullchain-path "${root}/csr/fullchain-p384.pem"
 openssl x509 -in "${root}/csr/cert-p384.pem" -text | grep 'ASN1 OID: secp384r1'
 
 # OCSP Must Staple
@@ -109,8 +111,6 @@ openssl x509 -in "${root}/conf/live/must-staple.le.wtf/cert.pem" -text | grep '1
 
 # revoke by account key
 common revoke --cert-path "$root/conf/live/le.wtf/cert.pem"
-# revoke renewed
-# common revoke --cert-path "$root/conf/live/le1.wtf/cert.pem"
 # revoke by cert key
 common revoke --cert-path "$root/conf/live/le2.wtf/cert.pem" \
        --key-path "$root/conf/live/le2.wtf/privkey.pem"

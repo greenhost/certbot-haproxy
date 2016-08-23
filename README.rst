@@ -155,6 +155,7 @@ Now to allow the certbot user to restart HAProxy, put the following in the
 sudoers file:
 
 .. code:: bash
+
     cat <<EOF >> /etc/sudoers
     %certbot ALL=NOPASSWD: /bin/systemctl restart haproxy
     EOF
@@ -182,6 +183,7 @@ probably not "copy-paste compatible" with your setup. So you need to piece
 together a configuration that works for you.
 
 .. code::
+
     cat <<EOF > /etc/haproxy/haproxy.cfg
     global
         log /dev/log local0
@@ -223,13 +225,13 @@ together a configuration that works for you.
 
     frontend http-in
         # Listen on port 80
-        bind *:80
+        bind \*:80
         # Listen on port 443
         # Uncomment after running certbot for the first time, a certificate
         # needs to be installed *before* HAProxy will be able to start when this
         # directive is not commented.
         #
-        bind *:443 ssl crt /opt/certbot/haproxy_fullchains/__fallback.pem crt /opt/certbot/haproxy_fullchains
+        bind \*:443 ssl crt /opt/certbot/haproxy_fullchains/__fallback.pem crt /opt/certbot/haproxy_fullchains
 
         # Forward Certbot verification requests to the certbot-haproxy plugin
         acl is_certbot path_beg -i /.well-known/acme-challenge
@@ -263,7 +265,7 @@ together a configuration that works for you.
         server node3 127.0.0.1:8080 check
         server node4 127.0.0.1:8080 check
         # If redirection from port 80 to 443 is to be forced, uncomment the next
-        # line. Keep in mind that the bind *:443 line should be uncommented and a
+        # line. Keep in mind that the bind \*:443 line should be uncommented and a
         # certificate should be present for all domains
         redirect scheme https if !{ ssl_fc }
 
@@ -313,6 +315,7 @@ minutes after the server boots, this is done so renewal starts immediately
 after the server has been offline for a long time.
 
 .. code:: bash
+
     cat <<EOF > /etc/systemd/system/letsencrypt.timer
     [Unit]
     Description=Run Let's Encrypt every 12 hours
@@ -334,6 +337,7 @@ after the server has been offline for a long time.
 
     [Service]
     Type=simple
+    User=certbot
     ExecStart=/usr/bin/certbot renew -q
     EOF
 
