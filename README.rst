@@ -37,12 +37,12 @@ First add the backports repo for Jessie to your apt sources.
 
 Now update, upgrade and install some requirements:
 
-- **Some utilities:** sudo tcpdump ufw git curl wget
-- **OpenSSL and CA certificates:** openssl ca-certificates
-- **Build dependencies:** build-essential libffi-dev libssl-dev python-dev
-- **Python and related:** python python-setuptools
-- **HAProxy:** haproxy
-- **Python dependency managing:** pip
+- **Some utilities:** ``sudo`` ``tcpdump`` ``ufw`` ``git`` ``curl`` ``wget``
+- **OpenSSL and CA certificates:** ``openssl`` ``ca-certificates``
+- **Build dependencies:** ``build-essential`` ``libffi-dev`` ``libssl-dev`` ``python-dev``
+- **Python and related:** ``python`` ``python-setuptools``
+- **HAProxy:** ``haproxy``
+- **Python dependency managing:** ``pip``
 
 .. code:: bash
 
@@ -134,7 +134,7 @@ web hosting environment - you can add those users to the ``certbot`` group.
     usermod -a -G certbot [ADD YOUR USER HERE]
 
 You will also need to tell your user what the working directory of your Certbot
-setup is (/opt/certbot/). Certbot allows you to create a configuration file
+setup is (``/opt/certbot/``). Certbot allows you to create a configuration file
 with default settings in the users' home dir:
 ``opt/certbot/.config/letsencrypt/cli.ini``.
 
