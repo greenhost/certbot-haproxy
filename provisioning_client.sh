@@ -198,31 +198,37 @@ bash -c 'echo "vagrant ALL=NOPASSWD: /bin/systemctl restart haproxy"
 systemctl restart apache2
 systemctl restart haproxy
 
-#cat <<EOF > /etc/systemd/system/letsencrypt.timer
-#[Unit]
-#Description=Run Let's Encrypt every 12 hours
-#
-#[Timer]
-## Time to wait after booting before we run first time
-#OnBootSec=2min
-## Time between running each consecutive time
-#OnUnitActiveSec=12h
-#Unit=letsencrypt.service
-#
-#[Install]
-#WantedBy=timers.target
-#EOF
-#
-#cat <<EOF > /etc/systemd/system/letsencrypt.service
-#[Unit]
-#Description=Renew Let's Encrypt Certificates
-#
-#[Service]
-#Type=simple
-#ExecStart=/usr/bin/certbot renew -q
-#EOF
-#
-#systemctl enable letsencrypt.timer
-#systemctl start letsencrypt.timer
+# Scripts that run certificate renewal for all certificates every 12 hours. Only
+# certificates that are due are renewed.
+cat <<EOF > /etc/systemd/system/letsencrypt.service
+[Unit]
+Description=Renew Let's Encrypt Certificates
+
+[Service]
+Type=simple
+User=vagrant
+ExecStart=/usr/bin/certbot renew -q
+EOF
+
+cat <<EOF > /etc/systemd/system/letsencrypt.timer
+[Unit]
+Description=Run Let's Encrypt every 12 hours
+
+[Timer]
+# Time to wait after booting before we run first time
+OnBootSec=2min
+# Time between running each consecutive time
+OnUnitActiveSec=12h
+Unit=letsencrypt.service
+
+[Install]
+WantedBy=timers.target
+EOF
+
+# Reload for when there were already other scripts in place.
+systemctl daemon-reload
+# Enable and start the timer, which runs the service.
+systemctl enable letsencrypt.timer
+systemctl start letsencrypt.timer
 
 echo "Provisioning completed."
