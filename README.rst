@@ -80,12 +80,12 @@ considered weak. We need to generate a new dhparams.pem file with a prime of at
 least ``2048`` bit length, you can also opt for ``3072`` or ``4096``. This can
 take hours on lower specification hardware, but will still take minutes on
 faster hardware, especially with ``4096`` bit primes. Run this is in a separate
-ssh session or uses ``screen`` of ``tmux`` to allow this to run in the
+ssh session or use ``screen`` of ``tmux`` to allow this to run in the
 background.
 
-```
-openssl dhparam -out /opt/certbot/dhparams.pem 2048
-```
+.. code:: bash
+
+    openssl dhparam -out /opt/certbot/dhparams.pem 2048
 
 Now set a hostname.
 
