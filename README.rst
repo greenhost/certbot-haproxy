@@ -155,6 +155,7 @@ Now to allow the certbot user to restart HAProxy, put the following in the
 sudoers file:
 
 .. code:: bash
+
     cat <<EOF >> /etc/sudoers
     %certbot ALL=NOPASSWD: /bin/systemctl restart haproxy
     EOF
@@ -182,6 +183,7 @@ probably not "copy-paste compatible" with your setup. So you need to piece
 together a configuration that works for you.
 
 .. code::
+
     cat <<EOF > /etc/haproxy/haproxy.cfg
     global
         log /dev/log local0
