@@ -60,7 +60,7 @@ debug = True
 verbose = True
 authenticator certbot-haproxy:haproxy-authenticator
 installer certbot-haproxy:haproxy-installer
-server http://le.wtf/directory
+server http://boulder.local/directory
 EOF
 chown -R vagrant: /home/vagrant/.config/letsencrypt
 
