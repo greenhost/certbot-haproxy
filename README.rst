@@ -355,13 +355,13 @@ server, which is the exact same server Let's Encrypt is running. The server is
 started in Virtual Box using Vagrant. To prevent the installation of any
 components and dependencies from cluttering up your computer there is also a
 client Virtual Box instance. Both of these machines can be setup and started by
-running the `dev_start.sh` script.
+running the ``dev_start.sh`` script.
 
 Development: Running locally without sudo
 -----------------------------------------
 
 You can't run certbot without root privileges because it needs to access
-`/etc/letsencrypt`, however you can tell it not to use `/etc/` and use some
+``/etc/letsencrypt``, however you can tell it not to use ``/etc/`` and use some
 other path in your home directory.
 
 .. code:: bash
@@ -379,21 +379,21 @@ Now you can run Certbot without root privileges.
 
 Further time savers during development..
 ----------------------------------------
-The following options can be saved in the `cli.ini` file for the following
+The following options can be saved in the ``cli.ini`` file for the following
 reasons.
 
-- `agree-tos`: During each request for a certificate you need to agree to the
+- ``agree-tos``: During each request for a certificate you need to agree to the
   terms of service of Let's Encrypt, automatically accept them every time.
-- `no-self-upgrade`: Tell LE to not upgrade itself. Could be very annoying
+- ``no-self-upgrade``: Tell LE to not upgrade itself. Could be very annoying
   when stuff starts to suddenly break, that worked just fine before.
-- `register-unsafely-without-email`: Tell LE that you don't want to be
+- ``register-unsafely-without-email``: Tell LE that you don't want to be
   notified by e-mail when certificates are about to expire or when the TOS
   changes, if you don't you will need to enter a valid e-mail address for
   every test run.
-- `text`: Disable the curses UI, and use the plain CLI version instead.
-- `domain example.org`: Enter a default domain name to request a certificate
+- ``text``: Disable the curses UI, and use the plain CLI version instead.
+- ``domain example.org``: Enter a default domain name to request a certificate
   for, so you don't have to specify it every time.
-- `configurator certbot-haproxy:haproxy`: Test with the HAProxy plugin every
+- ``configurator certbot-haproxy:haproxy``: Test with the HAProxy plugin every
   time.
 
 .. code:: bash
