@@ -103,6 +103,17 @@ class HAProxyInstaller(common.Plugin):
             type=str,
             default=constants.os_constant('crt_directory')
         )
+	add(
+            "haproxy-restart",
+            help=(
+                "Override the default command to restart haproxy."
+                " Default for this OS is \"{}\"".format(
+                    constants.os_constant('restart_cmd')
+                )
+            ),
+            type=str,
+            default=constants.os_constant('restart_cmd')
+        )
         add(
             "haproxy-config",
             help=(
@@ -555,7 +566,14 @@ class HAProxyInstaller(common.Plugin):
         """
         self.config_test()
         try:
-            util.run_script(constants.os_constant("restart_cmd"))
+            # read the haproxy-restart command. per default this is an array
+            # if it is overwritten by the user, it is a string, so we have 
+            # to split it over spaces. This works not correctly if a user
+            # has quoted arguments (with spaces)
+            cmd = self.conf('haproxy-restart')
+            if isinstance(cmd, basestring):
+                cmd = cmd.split()
+            util.run_script(cmd)
         except errors.SubprocessError as err:
             raise errors.MisconfigurationError(str(err))
 
