@@ -1,4 +1,5 @@
 """Test installer functions"""
+from past.builtins import basestring
 import unittest
 import mock
 import os
@@ -75,7 +76,7 @@ class TestInstaller(unittest.TestCase):
         from OpenSSL import crypto
         self.installer.new_crt_files = {}
         self.installer._fall_back_cert()
-        key = self.installer.new_crt_files.keys()[0]
+        key = list(self.installer.new_crt_files.keys())[0]
         cert = self.installer.new_crt_files[key]
         self.assertIsInstance(key, str)
         self.assertIsInstance(cert, str)

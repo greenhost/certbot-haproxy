@@ -26,6 +26,8 @@
     Be sure to replace `$USER` with the user that will be running the lehaproxy
     installer.
 """
+from builtins import str
+from past.builtins import basestring
 import logging
 import os
 import glob
@@ -134,7 +136,7 @@ class HAProxyInstaller(common.Plugin):
                 " returns letsencrypt certificates. Defaults to the value"
                 " 'h2ppy h2cker fake CA' that is used by the local boulder."
             ),
-            type=unicode,
+            type=str,
             default=u'Let\'s Encrypt Authority X3'
         )
         add(
@@ -464,7 +466,7 @@ class HAProxyInstaller(common.Plugin):
 
         # Write all new files and changes:
         for filepath, contents in \
-                self.new_crt_files.items() + self.crt_files.items():
+                list(self.new_crt_files.items()) + list(self.crt_files.items()):
 
             # Make sure directory of filepath exists
             path = os.path.dirname(os.path.abspath(filepath))

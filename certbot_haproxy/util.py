@@ -1,6 +1,7 @@
 """
     Utility functions.
 """
+from builtins import object
 
 from OpenSSL import crypto
 import socket
