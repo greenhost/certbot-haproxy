@@ -19,6 +19,7 @@ pip-log.txt
 # Unit test / coverage reports
 .coverage
 .tox
+htmlcov
 
 # Translations
 *.mo
@@ -44,3 +45,4 @@ certbot.log
 
 # tmp files:
 *.swp
+

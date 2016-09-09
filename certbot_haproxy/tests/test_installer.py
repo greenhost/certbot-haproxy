@@ -15,6 +15,9 @@ def _conf(self, var):
 
 @mock.patch("certbot_haproxy.installer.HAProxyInstaller.conf", new=_conf)
 class TestInstaller(unittest.TestCase):
+
+    test_domain = 'le.wtf'
+
     """Test the relevant functions of the certbot_haproxy installer"""
 
     def setUp(self):
@@ -83,7 +86,6 @@ class TestInstaller(unittest.TestCase):
     def test_deploy_cert_save(self):
         """Deploy and save a certificate and rollback after that"""
         # Variables for test:
-        domain = 'le.wtf'
         crt_dir = os.path.join(self.temp_dir, self.test_dir, "deploy_test")
         base = os.path.join(self.temp_dir, self.test_dir, "deploy_cert")
         key_path = os.path.join(base, "privkey.pem")
@@ -99,37 +101,70 @@ class TestInstaller(unittest.TestCase):
         self.assertRaises(
             errors.PluginError,
             self.installer.deploy_cert,
-            domain, 'no-cert', 'no-key')
+            self.test_domain, 'no-cert', 'no-key')
 
         # Arguments for several tests
         all_args = [
-            (domain, cert_path, key_path),
-            (domain, cert_path, key_path, chain_path),
-            (domain, None, key_path, None, fullchain_path),
+            (self.test_domain, cert_path, key_path),
+            (self.test_domain, cert_path, key_path, chain_path),
+            (self.test_domain, None, key_path, None, fullchain_path),
         ]
 
         # Run deploy and save with all types of args
         for args in all_args:
             # Deploy with only key and cert
             self.installer.deploy_cert(*args)
+
+            try:
+                self.installer.view_config_changes()
+            except ReverterError:
+                self.fail("Reverter failed")
+            except PluginError:
+                self.fail("Reverter failed with PluginError")
+
             self.installer.save()
             # Check if le.wtf.pem is created
-            pem = os.path.join(crt_dir, domain) + self.installer.crt_postfix
+            pem = os.path.join(crt_dir, self.test_domain) \
+                + self.installer.crt_postfix
             self.assertTrue(os.path.isfile(pem))
             # Roll back pem creation
             self.installer.rollback_checkpoints()
             # Check if file was removed again
             self.assertFalse(os.path.isfile(pem))
 
+        # Try to revert:
+        try:
+            self.installer.recovery_routine()
+        except PluginError:
+            self.fail("Recovery routine didn't work")
+
+        # fail without key
+        self.assertRaises(
+            errors.PluginError,
+            self.installer.deploy_cert,
+            self.test_domain, cert_path, None)
+
+        # Run twice (should update instead of create)
+        args = (self.test_domain, cert_path, key_path)
+        self.installer.deploy_cert(*args)
+        self.installer.save()
+        self.installer.deploy_cert(*args)
+        self.installer.save()
+
+
+    def test_enhancement(self):
+        """ Currently no enhancements are supported, we should see that """
+        self.assertRaises(
+            errors.PluginError,
+            self.installer.enhance,
+            self.test_domain,
+            "non-existent-enhancement")
+
+
     @mock.patch("certbot_haproxy.installer.logger")
     @mock.patch("certbot.util.logger")
     def test_config_test(self, util_logger, certbot_logger):
         """Test config_test function with a faulty and a valid cfg file"""
-        # Check with current config file
-        self.installer.config_test()
-        self.assertEqual(certbot_logger.error.call_count, 0)
-        self.assertEqual(util_logger.error.call_count, 0)
-
         # Check with bad config file
         self.installer.config.haproxy_config = os.path.join(
             self.temp_dir, self.test_dir, "haproxy_bad.cfg")
@@ -145,3 +180,26 @@ class TestInstaller(unittest.TestCase):
             errors.MisconfigurationError,
             self.installer.config_test
         )
+
+    def test_more_info(self):
+        ret = self.installer.more_info()
+        self.assertIsInstance(ret, basestring)
+
+    @mock.patch('certbot.util.exe_exists', return_value=False)
+    def test_failed_service_command(self, mock_exe_exists):
+        """ Fail on service manager command """
+        self.assertRaises(errors.NoInstallationError, self.installer.prepare)
+        mock_exe_exists.assert_called_once()
+
+    @mock.patch('subprocess.check_output',
+                return_value='not-really-a-version-number')
+    def test_no_version_number(self, mock_check_output):
+        """ Fail on version command """
+        self.assertRaises(errors.NoInstallationError, self.installer.prepare)
+
+    @mock.patch('subprocess.check_output', 
+                return_value='HA-Proxy version 1.4.8 2014/10/31')
+    def test_wrong_version_number(self, mock_check_output):
+        """ Supply a too low version number for HAproxy """
+        self.assertRaises(errors.NotSupportedError, self.installer.prepare)
+        mock_check_output.assert_called_once()
