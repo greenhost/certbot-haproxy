@@ -523,7 +523,7 @@ class HAProxyInstaller(common.Plugin):
                     contents = pem.read()
                     if self._cert_key_check(contents, filepath):
                         yield (filepath, filepath, self.conf("haproxy-config"))
-            except IOError, err:
+            except IOError as err:
                 logger.error(
                     "Can't access \"%s\", reason:\n  %s",
                     filepath,
@@ -544,7 +544,7 @@ class HAProxyInstaller(common.Plugin):
         except TypeError:
             logger.warn("Could not read certificate, wrong type (not PEM)")
         # Documentation says it raises "Error"
-        except Exception, err:  # pylint: disable=broad-except
+        except Exception as err:  # pylint: disable=broad-except
             logger.error("Unexpected error! %s", err)
 
         if issuer == self.conf('haproxy-ca-common-name') and key.check():
