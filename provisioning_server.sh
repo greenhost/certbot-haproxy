@@ -5,7 +5,9 @@ dpkg-reconfigure -f noninteractive tzdata
 export DEBIAN_FRONTEND="noninteractive"
 
 # Install go 1.5
-wget -q https://storage.googleapis.com/golang/go1.5.linux-amd64.tar.gz
+if [ ! -f go1.5.linux-amd64.tar.gz ]; then
+    wget -q https://storage.googleapis.com/golang/go1.5.linux-amd64.tar.gz
+fi
 tar -C /usr/local -xzf go1.5.linux-amd64.tar.gz
 
 # Set GOROOT and GOPATH so that GO knows where it is and where it can install
@@ -118,7 +120,7 @@ server {
 }
 EOF
 
-ln -s /etc/nginx/sites-available/wfe /etc/nginx/sites-enabled/wfe
+ln -fs /etc/nginx/sites-available/wfe /etc/nginx/sites-enabled/wfe
 rm -rfv /etc/nginx/sites-enabled/default
 systemctl restart nginx
 

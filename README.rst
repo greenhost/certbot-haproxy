@@ -421,3 +421,20 @@ run:
 
 Since pip is part of ``python-setuptools``, you need to have it installed before
 you can update.
+
+Making a `.deb` debian package
+------------------------------
+
+Run the following commands in your vagrant machine:
+
+```
+    apt-file update
+    python setup.py sdist
+    # py2dsc has a problem with vbox mounted folders
+    mv dist/certbot-haproxy-<version>.tar.gz ~
+    cd ~
+    py2dsc certbot-haproxy-<version>.tar.gz
+    cd deb_dist/certbot-haproxy-<version>
+    # NOTE: Not signed, no signed changes (with -uc and -us)
+    dpkg-buildpackage -rfakeroot -uc -us
+```
