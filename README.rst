@@ -3,12 +3,37 @@ HAProxy plugin for Certbot
 
 .. contents:: Table of Contents
 
+About
+-----
+
+This is a certbot plugin for using certbot in combination with a HAProxy setup.
+Its advantage over using the standalone certbot is that it automatically places
+certificates in the correct directory and restarts HAProxy afterwards. It should
+also enable you to very easily do automatic certificate renewal.
+
+Furthermore, you can configure HAProxy to handle Boulder's authentication using
+the HAProxy authenticator of this plugin.
+
+It was created for use with `Greenhost`_'s share hosting environment and can be
+useful to you in the following cases:
+
+- If you use HAProxy and have several domains for which you want to enable Let's
+  Encrypt certificates
+- If you yourself have a shared hosting platform that uses HAProxy to redirect
+  to your client's websites
+- Actually any case in which you want to automatically restart HAProxy after you
+  request a new certificate.
+
+.. _Greenhost: https://greenhost.net
+
+Please read the installation instructions on how to configure HAProxy.
+
 Installing: Requirements
 ------------------------
 
 Currently this plugin has been tested on Debian Jessie, but it will most likely
 work on Ubuntu 14.04+ too. If you are running Debian Wheezy, you may need to
-take additional steps during the installation.
+take additional steps during the installation. Thus, the requirements are:
 
 - Debian Jessie (or higher) or Ubuntu Trusty (or higher).
 - Python 2.7 (2.6 is supported by certbot and our goal is to be compatible but
@@ -421,3 +446,25 @@ run:
 
 Since pip is part of ``python-setuptools``, you need to have it installed before
 you can update.
+
+Making a `.deb` debian package
+------------------------------
+Requirements:
+
+    - python stdeb: pip install --upgrade stdeb
+    - dh clean: apt-get install dh-make
+
+Run the following commands in your vagrant machine:
+
+```
+    apt-file update
+    python setup.py sdist
+    # py2dsc has a problem with vbox mounted folders
+    mv dist/certbot-haproxy-<version>.tar.gz ~
+    cd ~
+    py2dsc certbot-haproxy-<version>.tar.gz
+    cd deb_dist/certbot-haproxy-<version>
+    # NOTE: Not signed, no signed changes (with -uc and -us)
+    # NOTE: Add the package to the ghtools repo
+    dpkg-buildpackage -rfakeroot -uc -us
+```

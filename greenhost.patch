@@ -69,6 +69,6 @@ index 7a8d348..746dee8 100644
  {
 -    "module": "/usr/local/lib/libpkcs11-proxy.so",
 +    "module": "/usr/lib/softhsm/libsofthsm.so",
-     "tokenLabel": "token_label",
+     "tokenLabel": "intermediate",
      "pin": "5678",
-     "privateKeyLabel": "key_label"
+     "privateKeyLabel": "intermediate_key"

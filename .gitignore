@@ -19,6 +19,7 @@ pip-log.txt
 # Unit test / coverage reports
 .coverage
 .tox
+htmlcov
 
 # Translations
 *.mo
@@ -39,8 +40,9 @@ Scripts
 
 # LE HAProxy dev stuff
 working
-.vagrant
+.vagrant*
 certbot.log
 
 # tmp files:
 *.swp
+

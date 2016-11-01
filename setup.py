@@ -3,7 +3,7 @@ import sys
 from setuptools import setup
 from setuptools import find_packages
 
-
+own_version = '0.1.1'
 certbot_version = '0.8.1'
 
 # Please update tox.ini when modifying dependency version requirements
@@ -15,6 +15,7 @@ install_requires = [
     'setuptools>=1.0',
     'zope.component',
     'zope.interface',
+    'future',
 ]
 
 if sys.version_info < (2, 7):
@@ -42,7 +43,7 @@ haproxy_installer = 'certbot_haproxy.installer:HAProxyInstaller'
 
 setup(
     name='certbot-haproxy',
-    version=certbot_version,
+    version=own_version,
     description="HAProxy plugin for Certbot",
     long_description=long_description,
     url='https://code.greenhost.net/open/certbot-haproxy',
