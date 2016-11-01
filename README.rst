@@ -26,7 +26,11 @@ useful to you in the following cases:
 
 .. _Greenhost: https://greenhost.net
 
-Please read the installation instructions on how to configure HAProxy.
+This plugin does not configure HAProxy for you, because HAProxy configurations
+can can vary a great deal. Please read the installation instructions on how to
+configure HAProxy for use with the plugin. If you have a good idea on how we can
+implement automatic HAProxy configuration, you are welcome to create a merge
+request or an issue.
 
 Installing: Requirements
 ------------------------
