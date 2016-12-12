@@ -455,12 +455,13 @@ Making a `.deb` debian package
 ------------------------------
 Requirements:
 
-    - python stdeb: pip install --upgrade stdeb
-    - dh clean: apt-get install dh-make
+- python stdeb: pip install --upgrade stdeb
+- dh clean: apt-get install dh-make
 
 Run the following commands in your vagrant machine:
 
-```
+.. code:: bash
+
     apt-file update
     python setup.py sdist
     # py2dsc has a problem with vbox mounted folders
@@ -471,4 +472,4 @@ Run the following commands in your vagrant machine:
     # NOTE: Not signed, no signed changes (with -uc and -us)
     # NOTE: Add the package to the ghtools repo
     dpkg-buildpackage -rfakeroot -uc -us
-```
+
