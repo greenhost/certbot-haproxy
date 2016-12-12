@@ -24,7 +24,7 @@ useful to you in the following cases:
 - Actually any case in which you want to automatically restart HAProxy after you
   request a new certificate.
 
-.. _Greenhost: https://greenhost.net
+.. _Greenhost's: https://greenhost.net
 
 This plugin does not configure HAProxy for you, because HAProxy configurations
 can can vary a great deal. Please read the installation instructions on how to
