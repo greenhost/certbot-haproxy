@@ -14,13 +14,13 @@ also enable you to very easily do automatic certificate renewal.
 Furthermore, you can configure HAProxy to handle Boulder's authentication using
 the HAProxy authenticator of this plugin.
 
-It was created for use with `Greenhost`_'s share hosting environment and can be
+It was created for use with `Greenhost's`_ shared hosting environment and can be
 useful to you in the following cases:
 
 - If you use HAProxy and have several domains for which you want to enable Let's
-  Encrypt certificates
+  Encrypt certificates.
 - If you yourself have a shared hosting platform that uses HAProxy to redirect
-  to your client's websites
+  to your client's websites.
 - Actually any case in which you want to automatically restart HAProxy after you
   request a new certificate.
 
