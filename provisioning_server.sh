@@ -107,7 +107,7 @@ fi
 
 # Change pkcs to softhsm and IP to 192.168.33.111 and set high thresholds for rate limiting
 if grep -Fq "/usr/local/lib/libpkcs11-proxy.so" test/test-ca.key-pkcs11.json; then
-    git apply /vagrant/greenhost.patch
+    git apply /boulder/greenhost.patch
 fi
 
 cat <<EOF > /etc/nginx/sites-available/wfe
