@@ -474,6 +474,7 @@ Requirements:
 Run the following commands in your vagrant machine:
 
 .. code:: bash
+
     apt-file update
     python setup.py sdist
     # py2dsc has a problem with vbox mounted folders
