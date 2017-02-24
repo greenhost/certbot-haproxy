@@ -21,8 +21,8 @@ ENVS = {
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
-    config.hostmanager.enabled = true
-    config.hostmanager.manage_host = true
+    #config.hostmanager.enabled = true
+    #config.hostmanager.manage_host = true
     config.vbguest.auto_update = true
     config.vbguest.no_remote = false
 
