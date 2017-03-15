@@ -389,6 +389,12 @@ letsencrypt client, so don't worry if it takes more than an hour.
 
 Vagrant machines
 ================
+
+.. note:
+    This will probably not be maintained after the move to docker. All the
+    instructions below should be done from withing the ``vagrant/`` directory.
+    Don't base anything new on the vagrant setup.
+
 The ``dev_start.sh`` script boots two virtual machines. The first is named
 'boulder' and runs a development instance of the boulder server. The second is
 'lehaproxy' and runs the client. To test if the machines are setup correctly,
