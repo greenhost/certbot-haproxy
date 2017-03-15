@@ -390,7 +390,7 @@ letsencrypt client, so don't worry if it takes more than an hour.
 Vagrant machines
 ================
 
-.. note:
+.. note::
     This will probably not be maintained after the move to docker. All the
     instructions below should be done from withing the ``vagrant/`` directory.
     Don't base anything new on the vagrant setup.
