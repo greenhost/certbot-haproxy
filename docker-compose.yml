@@ -3,7 +3,7 @@ services:
     # Certbot HAProxy client
     certbot_haproxy_client:
         build:
-            context: ./certbot_haproxy_client
+            context: .
         ports:
           - 443:443
         network_mode: bridge
@@ -12,16 +12,17 @@ services:
         extra_hosts:
           - client:127.0.0.1
           - testsite.com:127.0.0.1
-  # Boulder server and dependencies
+        volumes:
+          - .:/opt/certbot-haproxy
+    # Boulder server and dependencies
     boulder:
-        build:
-            context: ./boulder
+        image: boulder_boulder:latest
         environment:
             FAKE_DNS: 127.0.0.1
             PKCS11_PROXY_SOCKET: tcp://boulder-hsm:5657
-        volumes:
-          - gopath:
-          - /tmp:/tmp
+        #volumes:
+        #  - gopath:
+        #  - /tmp:/tmp
         network_mode: bridge
         extra_hosts:
           - le.wtf:127.0.0.1
@@ -50,10 +51,15 @@ services:
           - bhsm:boulder-hsm
           - bmysql:boulder-mysql
           - brabbitmq:boulder-rabbitmq
+        depends_on:
+          - bhsm
+          - bmysql
+          - brabbitmq
     bhsm:
         # To minimize the fetching of various layers this should match
         # the FROM image and tag in boulder/Dockerfile
         image: letsencrypt/boulder-tools:2017-02-20
+        network_mode: bridge
         environment:
             PKCS11_DAEMON_SOCKET: tcp://0.0.0.0:5657
         command: /usr/local/bin/pkcs11-daemon /usr/lib/softhsm/libsofthsm.so
@@ -84,5 +90,3 @@ services:
         command: -config.file /promconf/prometheus.yml
         links:
           - boulder
-volumes:
-    - gopath:$GOPATH

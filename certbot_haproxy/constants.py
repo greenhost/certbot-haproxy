@@ -125,7 +125,7 @@ def os_analyse():
             "We're sorry, your OS  %s %s is currently not supported :("
             " you may be able to get this plugin working by defining a list of"
             " CLI_DEFAULTS in our `constants` module. Please consider making "
-            " a pull-request if you do!"
+            " a pull-request if you do!" % (distro, version)
         )
 
     if version not in CLI_DEFAULTS[distro]:
