@@ -6,7 +6,7 @@ EXPOSE 443
 
 WORKDIR /opt/certbot-haproxy
 
-RUN apk add --no-cache --virtual .certbot-deps haproxy
+RUN apk add --no-cache haproxy openrc
 
 RUN apk add --no-cache --virtual .build-deps \
         gcc \
@@ -20,7 +20,7 @@ COPY . .
 
 RUN pip install --no-cache-dir --editable /opt/certbot-haproxy
 
-RUN apk del .build-deps
+# RUN apk del .build-deps
 
 # TODO: Maybe there is no certbot user yet?
 RUN echo "%certbot ALL=NOPASSWD: /bin/systemctl restart haproxy" >> /etc/sudoers

@@ -6,26 +6,32 @@ services:
             context: .
         ports:
           - 443:443
-        network_mode: bridge
+          - 5002:5002
+        #network_mode: bridge
+        networks:
+          certbot_boulder_net:
+            ipv4_address: 127.0.1.1
         links:
           - boulder:boulder
         extra_hosts:
-          - client:127.0.0.1
-          - testsite.com:127.0.0.1
+          - le.wtf:127.0.1.1
+          - le2.wtf:127.0.1.1
         volumes:
           - .:/opt/certbot-haproxy
     # Boulder server and dependencies
     boulder:
         image: boulder_boulder:latest
         environment:
-            FAKE_DNS: 127.0.0.1
+            FAKE_DNS: 127.0.1.1
             PKCS11_PROXY_SOCKET: tcp://boulder-hsm:5657
-        #volumes:
-        #  - gopath:
-        #  - /tmp:/tmp
-        network_mode: bridge
+        # volumes:
+        #   - $GOPATH:/go/
+        #   - /tmp:/tmp
+        #network_mode: bridge
+        networks:
+          certbot_boulder_net:
+            ipv4_address: 127.0.1.2
         extra_hosts:
-          - le.wtf:127.0.0.1
           - boulder:127.0.0.1
         ports:
           - 4000:4000 # ACME
@@ -90,3 +96,11 @@ services:
         command: -config.file /promconf/prometheus.yml
         links:
           - boulder
+networks:
+  certbot_boulder_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        -
+          subnet: 127.0.1.1/2
