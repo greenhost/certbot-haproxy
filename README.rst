@@ -49,7 +49,7 @@ Installing:
 -----------
 
 If you need to set up a server, follow the instructions in the
-`FULL_INSTALL.rst`_ document. If you only need to install the certbot-haproxy
+`</FULL_INSTALL.rst>`_ document. If you only need to install the certbot-haproxy
 plugin and already have HAProxy running on a server, keep reading.
 
 Quick installation
@@ -251,4 +251,4 @@ after the server has been offline for a long time.
 Development
 -----------
 
-For development guidelines, check `CONTRIBUTING.rst`_
+For development guidelines, check `</CONTRIBUTING.rst>`_

@@ -1,3 +1,4 @@
+.. _full_server_setup
 Full server setup
 =================
 
@@ -159,5 +160,5 @@ to get it from our Gitlab server.
     cd ./certbot-haproxy/
     sudo pip install ./
 
-Continue reading `README.rst`_ after the quick installation instructions, at
+Continue reading `</README.rst>`_ after the quick installation instructions, at
 :ref:`haproxy_config`
