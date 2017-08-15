@@ -14,19 +14,23 @@ also enable you to very easily do automatic certificate renewal.
 Furthermore, you can configure HAProxy to handle Boulder's authentication using
 the HAProxy authenticator of this plugin.
 
-It was created for use with `Greenhost`_'s share hosting environment and can be
+It was created for use with `Greenhost's`_ shared hosting environment and can be
 useful to you in the following cases:
 
 - If you use HAProxy and have several domains for which you want to enable Let's
-  Encrypt certificates
+  Encrypt certificates.
 - If you yourself have a shared hosting platform that uses HAProxy to redirect
-  to your client's websites
+  to your client's websites.
 - Actually any case in which you want to automatically restart HAProxy after you
   request a new certificate.
 
-.. _Greenhost: https://greenhost.net
+.. _Greenhost's: https://greenhost.net
 
-Please read the installation instructions on how to configure HAProxy.
+This plugin does not configure HAProxy for you, because HAProxy configurations
+can can vary a great deal. Please read the installation instructions on how to
+configure HAProxy for use with the plugin. If you have a good idea on how we can
+implement automatic HAProxy configuration, you are welcome to create a merge
+request or an issue.
 
 Installing: Requirements
 ------------------------
@@ -380,7 +384,19 @@ server, which is the exact same server Let's Encrypt is running. The server is
 started in Virtual Box using Vagrant. To prevent the installation of any
 components and dependencies from cluttering up your computer there is also a
 client Virtual Box instance. Both of these machines can be setup and started by
-running the ``dev_start.sh`` script.
+running the ``dev_start.sh`` script. This sets up a local boulder server and the
+letsencrypt client, so don't worry if it takes more than an hour.
+
+Vagrant machines
+================
+The ``dev_start.sh`` script boots two virtual machines. The first is named
+'boulder' and runs a development instance of the boulder server. The second is
+'lehaproxy' and runs the client. To test if the machines are setup correctly,
+you can SSH into the 'lehaproxy' machine, by running ``vagrant ssh
+lehaproxy``. Next, go to the /lehaproxy directory and run
+``./tests/boulder-integration.sh``. This runs a modified version of certbot's
+boulder-integration test, which tests the HAProxy plugin. If the test succeeds,
+your development environment is setup correctly.
 
 Development: Running locally without sudo
 -----------------------------------------
@@ -449,14 +465,16 @@ you can update.
 
 Making a `.deb` debian package
 ------------------------------
+
 Requirements:
 
-    - python stdeb: pip install --upgrade stdeb
-    - dh clean: apt-get install dh-make
+- python stdeb: pip install --upgrade stdeb
+- dh clean: apt-get install dh-make
 
 Run the following commands in your vagrant machine:
 
-```
+.. code:: bash
+
     apt-file update
     python setup.py sdist
     # py2dsc has a problem with vbox mounted folders
@@ -467,4 +485,3 @@ Run the following commands in your vagrant machine:
     # NOTE: Not signed, no signed changes (with -uc and -us)
     # NOTE: Add the package to the ghtools repo
     dpkg-buildpackage -rfakeroot -uc -us
-```
