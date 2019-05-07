@@ -82,7 +82,7 @@ Now update, upgrade and install some requirements:
         openssl ca-certificates \
         build-essential libffi-dev libssl-dev python-dev \
         python python-setuptools \
-        haproxy
+        haproxy python3-all python3-future
 
     easy_install pip
     pip install --upgrade setuptools
@@ -308,17 +308,16 @@ may try to install a certificate now.
 
 .. code:: bash
 
-    certbot run --authenticator certbot-haproxy:haproxy-authenticator \
-        --installer certbot-haproxy:haproxy-installer
+    certbot certonly --authenticator certbot-haproxy:haproxy-authenticator \
+        --deploy-hook /path/to/your/install/script
 
-If you want your ``certbot`` to always use our Installer and Authenticator, you
+If you want your ``certbot`` to always use our Authenticator, you
 can add this to your configuration file:
 
 .. code:: bash
 
     cat <<EOF >> $HOME/.config/letsencrypt/cli.ini
     authenticator=certbot-haproxy:haproxy-authenticator
-    installer=certbot-haproxy:haproxy-installer
     EOF
 
 If you need to run in unattended mode, there are a bunch of arguments you need
@@ -367,7 +366,7 @@ after the server has been offline for a long time.
     [Service]
     Type=simple
     User=certbot
-    ExecStart=/usr/bin/certbot renew -q
+    ExecStart=/usr/bin/certbot renew -q --deploy-hook /path/to/deploy/script
     EOF
 
     # Enable the timer and start it, this is not necessary for the service,
@@ -446,7 +445,6 @@ reasons.
     text=True
     domain=example.org
     authenticator=certbot-haproxy:haproxy-authenticator
-    installer=certbot-haproxy:haproxy-installer
     EOF
 
 Setuptools version conflict
@@ -476,11 +474,11 @@ Run the following commands in your vagrant machine:
 .. code:: bash
 
     apt-file update
-    python setup.py sdist
+    python3 setup.py sdist
     # py2dsc has a problem with vbox mounted folders
     mv dist/certbot-haproxy-<version>.tar.gz ~
     cd ~
-    py2dsc certbot-haproxy-<version>.tar.gz
+    py2dsc --with-python3=True certbot-haproxy-<version>.tar.gz
     cd deb_dist/certbot-haproxy-<version>
     # NOTE: Not signed, no signed changes (with -uc and -us)
     # NOTE: Add the package to the ghtools repo

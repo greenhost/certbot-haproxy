@@ -1,0 +1,41 @@
+#!/usr/bin/python3
+
+
+import os
+import re
+import sys
+
+# Get LINEAGE from Environment
+lineage=os.environ.get('RENEWED_LINEAGE')
+
+# If Nothing renewed, exit
+if not lineage:
+	sys.exit()
+
+
+# Fetch domain
+result = re.match(r'.*/live/(.+)$', lineage)
+
+# No match found
+if not result:
+	sys.exit(1)
+
+domain = result.group(1)
+
+
+# Deploy path
+deploy_path="/etc/haproxy/ssl/" + domain + ".pem"
+source_key = lineage + "/privkey.pem"
+source_chain = lineage + "/fullchain.pem"
+
+deploy = open(deploy_path, "w")
+key = open(source_key, "r")
+chain = open(source_chain, "r")
+deploy.write(key.read())
+deploy.write(chain.read())
+
+chain.close()
+key.close()
+deploy.close()
+
+
