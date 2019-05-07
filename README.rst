@@ -32,6 +32,19 @@ configure HAProxy for use with the plugin. If you have a good idea on how we can
 implement automatic HAProxy configuration, you are welcome to create a merge
 request or an issue.
 
+Dropped installer support in version 0.2.0
+------------------------------------------
+
+In version 0.2.0 the installer component is dropped. Originally the installer
+component made sure to place the certificates in the right directory for haproxy
+by combining the key and the crt. This was done because original versions of
+certbot executed the hooks after every domain renewal.
+
+New versions of certbot have move fine grained post install hooks. With those
+hooks more flexibility is added for installation. An example script and command
+is added in version 0.2.0+
+
+
 Installing: Requirements
 ------------------------
 
@@ -302,8 +315,8 @@ together a configuration that works for you.
 
     systemctl restart haproxy
 
-Now you can try to run Certbot with the plugin as the Authenticator and
-Installer, if you already have websites configured in your HAProxy setup, you
+Now you can try to run Certbot with the plugin as the Authenticator.
+Iff you already have websites configured in your HAProxy setup, you
 may try to install a certificate now.
 
 .. code:: bash
