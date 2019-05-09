@@ -13,7 +13,6 @@ lineage=os.environ.get('RENEWED_LINEAGE')
 if not lineage:
     sys.exit()
 
-
 # From the linage, we strip the 'domain name', which is the last part
 # of the path.
 result = re.match(r'.*/live/(.+)$', lineage)
@@ -25,11 +24,10 @@ if not result:
 # Extract the domain name
 domain = result.group(1)
 
-
 # Define a path for HAproxy where you want to write the .pem file.
 deploy_path="/etc/haproxy/ssl/" + domain + ".pem"
 
-# The source files can be found in below paths, constructed wuth the lineage
+# The source files can be found in below paths, constructed with the lineage
 # path
 source_key = lineage + "/privkey.pem"
 source_chain = lineage + "/fullchain.pem"
@@ -41,13 +39,11 @@ with open(deploy_path, "w") as deploy, \
     deploy.write(key.read())
     deploy.write(chain.read())
 
-
-
 # Here you can add your service reload command. Which will be executed after
 # every renewal, which is fine if you only have a few domains.
 
 # Alternative is to add the reload to the --post-hook. In that case it is only
-# ran once after all renewals. That would be the use-case if you have a large
+# run once after all renewals. That would be the use-case if you have a large
 # number of different certificates served by HAproxy.
 
 
