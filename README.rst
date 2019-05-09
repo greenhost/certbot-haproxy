@@ -32,7 +32,7 @@ configure HAProxy for use with the plugin. If you have a good idea on how we can
 implement automatic HAProxy configuration, you are welcome to create a merge
 request or an issue.
 
-Dropped installer support in version 0.2.0
+Dropped installer support in version 0.2.0+
 ------------------------------------------
 
 In version 0.2.0 the installer component is dropped. Originally the installer
@@ -44,6 +44,8 @@ New versions of certbot have move fine grained post install hooks. With those
 hooks more flexibility is added for installation. An example script and command
 is added in version 0.2.0+
 
+The example script for deploy is `certbot-deploy-hook-example`
+
 
 Installing: Requirements
 ------------------------
@@ -53,24 +55,25 @@ work on Ubuntu 14.04+ too. If you are running Debian Wheezy, you may need to
 take additional steps during the installation. Thus, the requirements are:
 
 - Debian Jessie (or higher) or Ubuntu Trusty (or higher).
-- Python 2.7 (2.6 is supported by certbot and our goal is to be compatible but
+- Python 3.0+ (Python 2.7 is still supported to be compatible with older
+  operating systems)
   it has not been tested yet).
-- HAProxy 1.6+ (we will configure SNI, which is not strictly required)
-- Certbot 0.8+
+- HAProxy 1.6+
+- Certbot 0.19+
 
 Installing: Getting started
 ---------------------------
 
-The installation below assumes you are running Debian Jessie but it should be
+The installation below assumes you are running Debian Stretch but it should be
 almost entirely the same process on Ubuntu.
 
-First add the backports repo for Jessie to your apt sources.
+If you are still using Jessie, you have to add the backports repo for Jessie.
 
 .. note::
 
     This will not work for Ubuntu, you will need to use another source,
     check which version comes with your version of Ubuntu, if it is a version
-    below 0.8, you need to find a back port PPA or download certbot from source.
+    below 0.19, you need to find a back port PPA or download certbot from source.
 
 .. code:: bash
 
@@ -95,7 +98,7 @@ Now update, upgrade and install some requirements:
         openssl ca-certificates \
         build-essential libffi-dev libssl-dev python-dev \
         python python-setuptools \
-        haproxy python3-all python3-future
+        haproxy python3-pip python3-setuptools
 
     easy_install pip
     pip install --upgrade setuptools
@@ -316,7 +319,7 @@ together a configuration that works for you.
     systemctl restart haproxy
 
 Now you can try to run Certbot with the plugin as the Authenticator.
-Iff you already have websites configured in your HAProxy setup, you
+If you already have websites configured in your HAProxy setup, you
 may try to install a certificate now.
 
 .. code:: bash
