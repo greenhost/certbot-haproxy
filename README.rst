@@ -32,6 +32,21 @@ configure HAProxy for use with the plugin. If you have a good idea on how we can
 implement automatic HAProxy configuration, you are welcome to create a merge
 request or an issue.
 
+Dropped installer support in version 0.2.0+
+------------------------------------------
+
+In version 0.2.0 the installer component is dropped. Originally the installer
+component made sure to place the certificates in the right directory for haproxy
+by combining the key and the crt. This was done because original versions of
+certbot executed the hooks after every domain renewal.
+
+New versions of certbot have move fine grained post install hooks. With those
+hooks more flexibility is added for installation. An example script and command
+is added in version 0.2.0+
+
+The example script for deploy is `certbot-deploy-hook-example`
+
+
 Installing: Requirements
 ------------------------
 
@@ -40,24 +55,25 @@ work on Ubuntu 14.04+ too. If you are running Debian Wheezy, you may need to
 take additional steps during the installation. Thus, the requirements are:
 
 - Debian Jessie (or higher) or Ubuntu Trusty (or higher).
-- Python 2.7 (2.6 is supported by certbot and our goal is to be compatible but
+- Python 3.0+ (Python 2.7 is still supported to be compatible with older
+  operating systems)
   it has not been tested yet).
-- HAProxy 1.6+ (we will configure SNI, which is not strictly required)
-- Certbot 0.8+
+- HAProxy 1.6+
+- Certbot 0.19+
 
 Installing: Getting started
 ---------------------------
 
-The installation below assumes you are running Debian Jessie but it should be
+The installation below assumes you are running Debian Stretch but it should be
 almost entirely the same process on Ubuntu.
 
-First add the backports repo for Jessie to your apt sources.
+If you are still using Jessie, you have to add the backports repo for Jessie.
 
 .. note::
 
     This will not work for Ubuntu, you will need to use another source,
     check which version comes with your version of Ubuntu, if it is a version
-    below 0.8, you need to find a back port PPA or download certbot from source.
+    below 0.19, you need to find a back port PPA or download certbot from source.
 
 .. code:: bash
 
@@ -82,7 +98,7 @@ Now update, upgrade and install some requirements:
         openssl ca-certificates \
         build-essential libffi-dev libssl-dev python-dev \
         python python-setuptools \
-        haproxy
+        haproxy python3-pip python3-setuptools
 
     easy_install pip
     pip install --upgrade setuptools
@@ -302,23 +318,22 @@ together a configuration that works for you.
 
     systemctl restart haproxy
 
-Now you can try to run Certbot with the plugin as the Authenticator and
-Installer, if you already have websites configured in your HAProxy setup, you
+Now you can try to run Certbot with the plugin as the Authenticator.
+If you already have websites configured in your HAProxy setup, you
 may try to install a certificate now.
 
 .. code:: bash
 
-    certbot run --authenticator certbot-haproxy:haproxy-authenticator \
-        --installer certbot-haproxy:haproxy-installer
+    certbot certonly --authenticator certbot-haproxy:haproxy-authenticator \
+        --deploy-hook /path/to/your/install/script
 
-If you want your ``certbot`` to always use our Installer and Authenticator, you
+If you want your ``certbot`` to always use our Authenticator, you
 can add this to your configuration file:
 
 .. code:: bash
 
     cat <<EOF >> $HOME/.config/letsencrypt/cli.ini
     authenticator=certbot-haproxy:haproxy-authenticator
-    installer=certbot-haproxy:haproxy-installer
     EOF
 
 If you need to run in unattended mode, there are a bunch of arguments you need
@@ -367,7 +382,7 @@ after the server has been offline for a long time.
     [Service]
     Type=simple
     User=certbot
-    ExecStart=/usr/bin/certbot renew -q
+    ExecStart=/usr/bin/certbot renew -q --deploy-hook /path/to/deploy/script
     EOF
 
     # Enable the timer and start it, this is not necessary for the service,
@@ -446,7 +461,6 @@ reasons.
     text=True
     domain=example.org
     authenticator=certbot-haproxy:haproxy-authenticator
-    installer=certbot-haproxy:haproxy-installer
     EOF
 
 Setuptools version conflict
@@ -476,11 +490,11 @@ Run the following commands in your vagrant machine:
 .. code:: bash
 
     apt-file update
-    python setup.py sdist
+    python3 setup.py sdist
     # py2dsc has a problem with vbox mounted folders
     mv dist/certbot-haproxy-<version>.tar.gz ~
     cd ~
-    py2dsc certbot-haproxy-<version>.tar.gz
+    py2dsc --with-python3=True certbot-haproxy-<version>.tar.gz
     cd deb_dist/certbot-haproxy-<version>
     # NOTE: Not signed, no signed changes (with -uc and -us)
     # NOTE: Add the package to the ghtools repo

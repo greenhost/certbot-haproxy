@@ -12,9 +12,10 @@ class ConstantsTest(unittest.TestCase):
     CLI_DEFAULTS = {
         "debian": {
             '_min_version': '7',
-            '_max_version': '8',
+            '_max_version': '9',
             '7': 7,
-            '8': 8
+            '8': 8,
+	    '9': 9
         },
         "ubuntu": {
             '_min_version': '14.04',
@@ -37,13 +38,13 @@ class ConstantsTest(unittest.TestCase):
         )
 
     @patch('certbot_haproxy.constants.CLI_DEFAULTS', new=CLI_DEFAULTS)
-    @patch('certbot.util.get_os_info', return_value=['debian', '9'])
+    @patch('certbot.util.get_os_info', return_value=['debian', '10'])
     @patch('certbot_haproxy.constants.logger')
     def test_os_analyse_unsupported_new(self, m_logger, *mocks):
         """ Test an unsupported, too new version.. """
         self.assertEqual(
             constants.os_analyse(caching_disabled=True),
-            ('debian', '8')
+            ('debian', '9')
         )
         m_logger.warn.assert_called_once()
 
@@ -60,17 +61,6 @@ class ConstantsTest(unittest.TestCase):
         """ Test an unsupported OS/distro.. """
         with self.assertRaises(NotSupportedError):
             constants.os_analyse(caching_disabled=True)
-
-    @patch('certbot_haproxy.constants.CLI_DEFAULTS', new=CLI_DEFAULTS)
-    @patch('certbot.util.get_os_info', return_value=['ubuntu', '15.06'])
-    @patch('certbot_haproxy.constants.logger')
-    def test_os_analyse_between_versions(self, m_logger, *mocks):
-        """ Test a version in between our supported version numbers.. """
-        self.assertEqual(
-            constants.os_analyse(caching_disabled=True),
-            ('ubuntu', '15.04')
-        )
-        m_logger.warn.assert_called_once()
 
 
 if __name__ == '__main__':

@@ -3,7 +3,7 @@ import sys
 from setuptools import setup
 from setuptools import find_packages
 
-own_version = '0.1.1'
+own_version = '0.2.0'
 certbot_version = '0.8.1'
 
 # Please update tox.ini when modifying dependency version requirements
@@ -39,7 +39,6 @@ long_description = (
 )
 
 haproxy_authenticator = 'certbot_haproxy.authenticator:HAProxyAuthenticator'
-haproxy_installer = 'certbot_haproxy.installer:HAProxyInstaller'
 
 setup(
     name='certbot-haproxy',
@@ -77,7 +76,6 @@ setup(
     entry_points={
         'certbot.plugins': [
             'haproxy-authenticator = %s' % haproxy_authenticator,
-            'haproxy-installer = %s' % haproxy_installer
         ],
     },
     # test_suite='certbot_haproxy',
