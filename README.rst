@@ -32,6 +32,21 @@ configure HAProxy for use with the plugin. If you have a good idea on how we can
 implement automatic HAProxy configuration, you are welcome to create a merge
 request or an issue.
 
+Dropped installer support in version 0.2.0+
+------------------------------------------
+
+In version 0.2.0 the installer component is dropped. Originally the installer
+component made sure to place the certificates in the right directory for haproxy
+by combining the key and the crt. This was done because original versions of
+certbot executed the hooks after every domain renewal.
+
+New versions of certbot have more fine grained post install hooks. With those
+hooks more flexibility is added for installation. An example script and command
+is added in version 0.2.0+
+
+The example script for deploy is `certbot-deploy-hook-example`
+
+
 Installing: Requirements
 ------------------------
 
@@ -40,24 +55,159 @@ work on Ubuntu 14.04+ too. If you are running Debian Wheezy, you may need to
 take additional steps during the installation. Thus, the requirements are:
 
 - Debian Jessie (or higher) or Ubuntu Trusty (or higher).
-- Python 2.7 (2.6 is supported by certbot and our goal is to be compatible but
+- Python 3.0+ (Python 2.7 is still supported to be compatible with older
+  operating systems)
   it has not been tested yet).
-- HAProxy 1.6+ (we will configure SNI, which is not strictly required)
-- Certbot 0.8+
+- HAProxy 1.6+
+- Certbot 0.19+
 
-Installing:
------------
+Installing: Getting started
+---------------------------
 
-If you need to set up a server, follow the instructions in the
-`</FULL_INSTALL.rst>`_ document. If you only need to install the certbot-haproxy
-plugin and already have HAProxy running on a server, keep reading.
+The installation below assumes you are running Debian Stretch but it should be
+almost entirely the same process on Ubuntu.
 
-Quick installation
-++++++++++++++++++
+If you are still using Jessie, you have to add the backports repo for Jessie.
 
-If you already have a server running HAProxy, first install certbot following
-their `installation instructions <https://certbot.eff.org/docs/install.html>`_.
-Then follow these steps to install certbot-haproxy:
+.. note::
+
+    This will not work for Ubuntu, you will need to use another source,
+    check which version comes with your version of Ubuntu, if it is a version
+    below 0.19, you need to find a back port PPA or download certbot from source.
+
+.. code:: bash
+
+    echo "deb http://ftp.debian.org/debian jessie-backports main" >> \
+        /etc/apt/sources.list.d/jessie-backports.list
+
+Now update, upgrade and install some requirements:
+
+- **Some utilities:** ``sudo`` ``tcpdump`` ``ufw`` ``git`` ``curl`` ``wget``
+- **OpenSSL and CA certificates:** ``openssl`` ``ca-certificates``
+- **Build dependencies:** ``build-essential`` ``libffi-dev`` ``libssl-dev`` ``python-dev``
+- **Python and related:** ``python`` ``python-setuptools``
+- **HAProxy:** ``haproxy``
+- **Python dependency managing:** ``pip``
+
+.. code:: bash
+
+    apt-get update
+    apt-get upgrade -y
+    apt-get install -y \
+        sudo tcpdump ufw git curl wget \
+        openssl ca-certificates \
+        build-essential libffi-dev libssl-dev python-dev \
+        python python-setuptools \
+        haproxy python3-pip python3-setuptools
+
+    easy_install pip
+    pip install --upgrade setuptools
+
+We also installed a simple firewall above, but it is not yet configured, let's
+do that now:
+
+.. code:: bash
+
+    ufw allow ssh
+    ufw allow http
+    ufw allow https
+    ufw default deny incoming
+    ufw --force enable
+
+.. warning::
+
+    You probably want a little more protection for a production proxy
+    than just this simple firewall, but it's out of the scope of this readme.
+
+Now that we have all dependencies, it's time to start a process that may take
+quite some time to complete. HAProxy comes with a DH parameters file that is
+considered weak. We need to generate a new dhparams.pem file with a prime of at
+least ``2048`` bit length, you can also opt for ``3072`` or ``4096``. This can
+take hours on lower specification hardware, but will still take minutes on
+faster hardware, especially with ``4096`` bit primes. Run this is in a separate
+ssh session or use ``screen`` of ``tmux`` to allow this to run in the
+background.
+
+.. code:: bash
+
+    openssl dhparam -out /opt/certbot/dhparams.pem 2048
+
+Now set a hostname.
+
+.. code:: bash
+
+    echo "[INSERT YOUR HOSTNAME HERE]" > /etc/hostname
+    hostname -F /etc/hostname
+
+If you want to run Certbot in an unprivileged mode, keep reading, otherwise,
+skip to the installation of Certbot.
+
+Certbot normally requires access to the ``/etc/`` directory, which is owned by
+root and therefore, Certbot needs to run as root. However, we don't like it
+when processes run as root, most especially when they are opening ports on a
+public network interface..
+
+In order to let Certbot run as an unprivileged user, we will:
+
+- Create a ``certbot`` user with a home directory on the system so the
+  automatic renewal of certificates can be run by this user.
+- Tell Certbot that the working directories are located in ``certbot``'s home
+  directory.
+- Optionally: add your own user account to the Certbot user's group so you can
+  run Certbot manually.
+- Allow HAProxy to access the certificates that are generated by Certbot.
+- Allow the certbot user to restart the HAProxy server.
+
+Lastly, to do automatic renewal of certificates, we will create a systemd timer
+and a service to start at every boot and every 12 hours, at a random time off
+the day, in order to not collectively DDOS Let's Encrypts service.
+
+.. code:: bash
+
+    useradd -s /bin/bash -m -d /opt/certbot certbot
+    usermod -a -G certbot haproxy  # Allow HAProxy access to the certbot certs
+    mkdir -p /opt/certbot/logs
+    mkdir -p /opt/certbot/config
+    mkdir -p /opt/certbot/.config/letsencrypt
+
+If you need to use Certbot from your user account, or if you have a daemon
+running on your proxy server, that configures domains on your proxy, e.g.: in a
+web hosting environment - you can add those users to the ``certbot`` group.
+
+.. code:: bash
+
+    usermod -a -G certbot [ADD YOUR USER HERE]
+
+You will also need to tell your user what the working directory of your Certbot
+setup is (``/opt/certbot/``). Certbot allows you to create a configuration file
+with default settings in the users' home dir:
+``opt/certbot/.config/letsencrypt/cli.ini``.
+
+Besides the working directory.
+
+.. code:: bash
+
+    mkdir -p /opt/certbot/.config/letsencrypt
+    cat <<EOF > /opt/certbot/.config/letsencrypt/cli.ini
+    work-dir=/opt/certbot/
+    logs-dir=/opt/certbot/logs/
+    config-dir=/opt/certbot/config
+    EOF
+
+Next time you run Certbot, it will use our new working directory.
+
+Now to allow the certbot user to restart HAProxy, put the following in the
+sudoers file:
+
+.. code:: bash
+
+    cat <<EOF >> /etc/sudoers
+    %certbot ALL=NOPASSWD: /bin/systemctl restart haproxy
+    EOF
+
+Now we haven't done one very essential thing yet, install ``certbot-haproxy``.
+Since our plugin is in an alpha stage, we did not package it yet. You will need
+to get it from our Gitlab server.
 
 .. code:: bash
 
@@ -65,9 +215,6 @@ Then follow these steps to install certbot-haproxy:
     cd ./certbot-haproxy/
     sudo pip install ./
 
-.. _haproxy_config:
-Configuring HAProxy to work with certbot-haproxy
-------------------------------------------------
 
 Let's Encrypt's CA server will try to contact your proxy on port 80, which is
 most likely in use for your and/or your customers' websites. So we have
@@ -171,26 +318,22 @@ together a configuration that works for you.
 
     systemctl restart haproxy
 
-Running certbot-haproxy
------------------------
-
-Now you can try to run Certbot with the plugin as the Authenticator and
-Installer, if you already have websites configured in your HAProxy setup, you
+Now you can try to run Certbot with the plugin as the Authenticator.
+If you already have websites configured in your HAProxy setup, you
 may try to install a certificate now.
 
 .. code:: bash
 
-    certbot run --authenticator certbot-haproxy:haproxy-authenticator \
-        --installer certbot-haproxy:haproxy-installer
+    certbot certonly --authenticator certbot-haproxy:haproxy-authenticator \
+        --deploy-hook /path/to/your/install/script
 
-If you want your ``certbot`` to always use our Installer and Authenticator, you
+If you want your ``certbot`` to always use our Authenticator, you
 can add this to your configuration file:
 
 .. code:: bash
 
     cat <<EOF >> $HOME/.config/letsencrypt/cli.ini
     authenticator=certbot-haproxy:haproxy-authenticator
-    installer=certbot-haproxy:haproxy-installer
     EOF
 
 If you need to run in unattended mode, there are a bunch of arguments you need
@@ -239,7 +382,7 @@ after the server has been offline for a long time.
     [Service]
     Type=simple
     User=certbot
-    ExecStart=/usr/bin/certbot renew -q
+    ExecStart=/usr/bin/certbot renew -q --deploy-hook /path/to/deploy/script
     EOF
 
     # Enable the timer and start it, this is not necessary for the service,
@@ -248,7 +391,111 @@ after the server has been offline for a long time.
     systemctl start letsencrypt.timer
 
 
-Development
------------
+Development: Getting started
+-----------------------------
 
-For development guidelines, check `</CONTRIBUTING.rst>`_
+In order to run tests against the Let's Encrypt API we will run a Boulder
+server, which is the exact same server Let's Encrypt is running. The server is
+started in Virtual Box using Vagrant. To prevent the installation of any
+components and dependencies from cluttering up your computer there is also a
+client Virtual Box instance. Both of these machines can be setup and started by
+running the ``dev_start.sh`` script. This sets up a local boulder server and the
+letsencrypt client, so don't worry if it takes more than an hour.
+
+Vagrant machines
+================
+The ``dev_start.sh`` script boots two virtual machines. The first is named
+'boulder' and runs a development instance of the boulder server. The second is
+'lehaproxy' and runs the client. To test if the machines are setup correctly,
+you can SSH into the 'lehaproxy' machine, by running ``vagrant ssh
+lehaproxy``. Next, go to the /lehaproxy directory and run
+``./tests/boulder-integration.sh``. This runs a modified version of certbot's
+boulder-integration test, which tests the HAProxy plugin. If the test succeeds,
+your development environment is setup correctly.
+
+Development: Running locally without sudo
+-----------------------------------------
+
+You can't run certbot without root privileges because it needs to access
+``/etc/letsencrypt``, however you can tell it not to use ``/etc/`` and use some
+other path in your home directory.
+
+.. code:: bash
+
+    mkdir ~/projects/certbot-haproxy/working
+    mkdir ~/projects/certbot-haproxy/working/config
+    mkdir ~/projects/certbot-haproxy/working/logs
+    cat <<EOF >> ~/.config/letsencrypt/cli.ini
+    work-dir=~/projects/certbot-haproxy/working/
+    logs-dir=~/projects/certbot-haproxy/working/logs/
+    config-dir=~/projects/certbot-haproxy/working/config
+    EOF
+
+Now you can run Certbot without root privileges.
+
+Further time savers during development..
+----------------------------------------
+The following options can be saved in the ``cli.ini`` file for the following
+reasons.
+
+- ``agree-tos``: During each request for a certificate you need to agree to the
+  terms of service of Let's Encrypt, automatically accept them every time.
+- ``no-self-upgrade``: Tell LE to not upgrade itself. Could be very annoying
+  when stuff starts to suddenly break, that worked just fine before.
+- ``register-unsafely-without-email``: Tell LE that you don't want to be
+  notified by e-mail when certificates are about to expire or when the TOS
+  changes, if you don't you will need to enter a valid e-mail address for
+  every test run.
+- ``text``: Disable the curses UI, and use the plain CLI version instead.
+- ``domain example.org``: Enter a default domain name to request a certificate
+  for, so you don't have to specify it every time.
+- ``configurator certbot-haproxy:haproxy``: Test with the HAProxy plugin every
+  time.
+
+.. code:: bash
+
+    cat <<EOF >> ~/.config/letsencrypt/cli.ini
+    agree-tos=True
+    no-self-upgrade=True
+    register-unsafely-without-email=True
+    text=True
+    domain=example.org
+    authenticator=certbot-haproxy:haproxy-authenticator
+    EOF
+
+Setuptools version conflict
+---------------------------
+
+Most likely the ``python-setuptools`` version in your os's repositories is
+quite outdated. You will need to install a newer version, to do this you can
+run:
+
+.. code:: bash
+
+    pip install --upgrade setuptools
+
+Since pip is part of ``python-setuptools``, you need to have it installed before
+you can update.
+
+Making a `.deb` debian package
+------------------------------
+
+Requirements:
+
+- python stdeb: pip install --upgrade stdeb
+- dh clean: apt-get install dh-make
+
+Run the following commands in your vagrant machine:
+
+.. code:: bash
+
+    apt-file update
+    python3 setup.py sdist
+    # py2dsc has a problem with vbox mounted folders
+    mv dist/certbot-haproxy-<version>.tar.gz ~
+    cd ~
+    py2dsc --with-python3=True certbot-haproxy-<version>.tar.gz
+    cd deb_dist/certbot-haproxy-<version>
+    # NOTE: Not signed, no signed changes (with -uc and -us)
+    # NOTE: Add the package to the ghtools repo
+    dpkg-buildpackage -rfakeroot -uc -us
