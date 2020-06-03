@@ -3,11 +3,7 @@ import sys
 from setuptools import setup
 from setuptools import find_packages
 
-<<<<<<< HEAD
-own_version = '0.1.2'
-=======
 own_version = '0.2.0'
->>>>>>> develop
 certbot_version = '0.8.1'
 
 # Please update tox.ini when modifying dependency version requirements
