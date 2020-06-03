@@ -40,7 +40,7 @@ component made sure to place the certificates in the right directory for haproxy
 by combining the key and the crt. This was done because original versions of
 certbot executed the hooks after every domain renewal.
 
-New versions of certbot have move fine grained post install hooks. With those
+New versions of certbot have more fine grained post install hooks. With those
 hooks more flexibility is added for installation. An example script and command
 is added in version 0.2.0+
 
